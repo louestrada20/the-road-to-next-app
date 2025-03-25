@@ -1,11 +1,12 @@
 import {ZodError} from "zod";
 
-export type ActionState = {
+export type ActionState<T = any> = {
     status?: "SUCCESS" | "ERROR";
     fieldErrors: Record<string, string[]> | undefined;
     message: string,
     payload?: FormData
     timestamp: number,
+    data?: T,
 };
 
 export const EMPTY_ACTION_STATE: ActionState = {
@@ -52,11 +53,15 @@ export const fromErrorToActionState = (error: unknown, formData?: FormData): Act
 
 export const toActionState = (
     status:ActionState['status'] ,
-    message: string
+    message: string,
+    formData?: FormData,
+    data?: unknown
 ): ActionState =>  {
     return { status,
         message,
         fieldErrors: {},
+        payload: formData,
         timestamp: Date.now(),
+        data,
     }
 }

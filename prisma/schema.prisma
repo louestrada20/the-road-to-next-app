@@ -8,6 +8,36 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model User {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String
+  passwordResetTokens PasswordResetToken[]
+  sessions     Session[]
+  firstName    String?
+  lastName     String?
+  comments     Comment[]
+  tickets      Ticket[]
+}
+model PasswordResetToken {
+  tokenHash  String   @id
+  expiresAt  DateTime
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+
+model Session {
+  id          String    @id
+  expiresAt   DateTime
+  userId      String
+  refreshedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 model Ticket {
   id        String       @id @default(cuid())
   createdAt DateTime     @default(now())
@@ -17,10 +47,28 @@ model Ticket {
   status    TicketStatus @default(OPEN)
   bounty    Int
   deadline  String
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  @@index([userId])
 }
 
 enum TicketStatus {
   OPEN
   IN_PROGRESS
   DONE
+}
+
+model Comment {
+  id          String     @id   @default(cuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  content     String     @db.VarChar(1024)
+  userId      String?
+  ticketId    String
+  user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ticket      Ticket     @relation(fields: [ticketId], references: [id], onDelete: Cascade )
+
+  @@index([ticketId])
+  @@index([userId])
 }
