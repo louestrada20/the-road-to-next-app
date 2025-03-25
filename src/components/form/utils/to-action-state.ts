@@ -1,6 +1,6 @@
 import {ZodError} from "zod";
 
-export type ActionState<T = any> = {
+export type ActionState<T = unknown> = {
     status?: "SUCCESS" | "ERROR";
     fieldErrors: Record<string, string[]> | undefined;
     message: string,

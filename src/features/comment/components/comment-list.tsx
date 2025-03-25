@@ -19,7 +19,7 @@ type CommentListProps = {
 
 const CommentList =  ({ticketId, paginatedComments }: CommentListProps )=> {
     const queryKey = ["comments", ticketId];
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch} = useInfiniteQuery({
+    const {data, fetchNextPage, hasNextPage, isFetchingNextPage} = useInfiniteQuery({
         queryKey,
         queryFn: ({pageParam}) => getComments(ticketId, pageParam),
         initialPageParam: undefined as string | undefined,
