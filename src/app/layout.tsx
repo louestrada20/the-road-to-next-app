@@ -52,14 +52,6 @@ export default function RootLayout({
         </ReactQueryProvider>
       </ThemeProvider>
     </NuqsAdapter>
-    <footer className="text-center m-1 p-1">
-      Website by Louis Estrada - from The Road to Next Course by Robin Wieruch -
-      <a href="https://www.road-to-next.com/"
-         target="_blank"
-         rel="noopener noreferrer">
-        Road To Next
-      </a>
-    </footer>
     </body>
     </html>
   );

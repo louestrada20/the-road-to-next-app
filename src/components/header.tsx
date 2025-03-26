@@ -34,11 +34,19 @@ const {user, isFetched} = useAuth();
 
                 <Link href={homePath()} className={buttonVariants({variant: "ghost"})}>
                     <LucideSquareKanban/>
-                    <h1 className="text-lg font-semibold">
+                    <h1 className="text-lg font-semibold ">
                         TicketBounty
                     </h1>
                 </Link>
 
+            </div>
+            <div className="text-xs text-muted-foreground">
+                Website by Louis Estrada - from The Road to Next Course by Robin Wieruch:&nbsp;
+                <a href="https://www.road-to-next.com/"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                      Road To Next
+                </a>
             </div>
             <div className="flex align-items gap-x-2">
             <ThemeSwitcher />
