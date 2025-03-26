@@ -36,21 +36,30 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
     <NuqsAdapter>
-    <ThemeProvider >
-      <ReactQueryProvider >
+      <ThemeProvider>
+        <ReactQueryProvider>
 
 
-    <Header />
-      <div className="flex h-screen overflow-hidden border-collapse">
-      <SideBar />
-    <main className='min-h-screen flex-1 overflow-y-auto overflow-x-hidden py-24 px-8 bg-secondary/20 flex flex-col '>
-        {children}
-    </main>
-      </div>
-      <Toaster expand/>
-      </ReactQueryProvider>
-    </ThemeProvider>
+          <Header/>
+          <div className="flex h-screen overflow-hidden border-collapse">
+            <SideBar/>
+            <main
+                className='min-h-screen flex-1 overflow-y-auto overflow-x-hidden py-24 px-8 bg-secondary/20 flex flex-col '>
+              {children}
+            </main>
+          </div>
+          <Toaster expand/>
+        </ReactQueryProvider>
+      </ThemeProvider>
     </NuqsAdapter>
+    <footer className="text-center m-1 p-1">
+      Website by Louis Estrada - from The Road to Next Course by Robin Wieruch -
+      <a href="https://www.road-to-next.com/"
+         target="_blank"
+         rel="noopener noreferrer">
+        Road To Next
+      </a>
+    </footer>
     </body>
     </html>
   );
