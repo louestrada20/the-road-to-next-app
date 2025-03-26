@@ -69,8 +69,11 @@ const seed = async () => {
     const t0 = performance.now();
     console.log('DB Seed: Started...')
 
+    if (!process.env.ADMIN_PASSWORD) {
+        throw new Error("ADMIN_PASSWORD is not set in the environment variables.");
+    }
+    const passwordHash = await hashPassword(process.env.ADMIN_PASSWORD);
 
-    const passwordHash = await hashPassword("geheimnis");
     // Delete current tickets and users in DB first.
     await prisma.user.deleteMany();
     await prisma.ticket.deleteMany();
