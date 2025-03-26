@@ -1,6 +1,7 @@
 "use server"
 import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
+import {sendEmailPasswordReset} from "@/features/password/emails/send-email-password-reset";
 import {generatePasswordResetLink} from "@/features/password/utils/generate-password-reset-link";
 import {prisma} from "@/lib/prisma";
 
@@ -20,11 +21,11 @@ export const passwordForgot = async (_actionState: ActionState, formData: FormDa
             return toActionState("ERROR", "Incorrect email", formData)
         }
 
-    //TODO  Send email to User with Password Reset Link/token
-    // instead of logging it.
+
 
     const passwordResetLink = await generatePasswordResetLink(user.id);
-    console.log(passwordResetLink);
+
+        await sendEmailPasswordReset(user.username, user.email, passwordResetLink);
     } catch (error) {
         return fromErrorToActionState(error, formData)
     }

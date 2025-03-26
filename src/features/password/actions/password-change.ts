@@ -3,6 +3,7 @@ import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {verifyPasswordHash} from "@/features/auth/password";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
+import {sendEmailPasswordReset} from "@/features/password/emails/send-email-password-reset";
 import {generatePasswordResetLink} from "@/features/password/utils/generate-password-reset-link";
 
 const passwordChangeSchema = z.object({
@@ -23,7 +24,9 @@ export const passwordChange = async (_actionState: ActionState, formData: FormDa
         }
 
         const passwordResetLink = await generatePasswordResetLink(auth.user.id);
-        console.log(passwordResetLink);
+
+        await sendEmailPasswordReset(auth.user.username, auth.user.email, passwordResetLink);
+
     } catch (error) {
         return fromErrorToActionState(error, formData)
     }
