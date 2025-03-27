@@ -70,8 +70,8 @@ const CommentList =  ({ticketId, paginatedComments }: CommentListProps )=> {
                 <div ref={ref}>{!hasNextPage && (<p className="text-right text-sm italic">No more comments...</p>)}</div>
                 {isFetchingNextPage && (
                     <>
-                    <Skeleton className="h-[70px] w-[500px]" />
-                    <Skeleton className="h-[70px] w-[500px]" />
+                    <Skeleton className="h-[80px] w-[540px]  mt-2" />
+                    <Skeleton className="h-[80px] w-[540px]  mt-2" />
                     </>
                 )}
             </div>
