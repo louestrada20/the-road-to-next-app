@@ -6,6 +6,7 @@ import {ActionState, fromErrorToActionState} from "@/components/form/utils/to-ac
 import {setSessionCookie} from "@/features/auth/cookie";
 import {hashPassword} from "@/features/auth/password";
 import {createSession, generateRandomSessionToken} from "@/features/auth/session";
+import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
 import {ticketsPath} from "@/paths";
 
@@ -27,7 +28,6 @@ const signUpSchema = z.object({
 
 
 export const signUp = async (_actionState: ActionState, formData: FormData) => {
-    console.log(Object.fromEntries(formData))
     try {
     const {username, email, password} = signUpSchema.parse(
         Object.fromEntries(formData)
@@ -43,15 +43,14 @@ export const signUp = async (_actionState: ActionState, formData: FormData) => {
             passwordHash,
             }
         });
+        await inngest.send({name: "app/account.welcome",
+            data: {userId: user.id}
+        })
 
         const sessionToken = generateRandomSessionToken();
         const session = await createSession(sessionToken, user.id);
         await setSessionCookie(sessionToken, session.expiresAt);
 
-        // const session = await lucia.createSession(user.id, {});
-        // const sessionCookie = lucia.createSessionCookie(session.id);
-        // const cookiesResult = await cookies();
-        //  cookiesResult.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
 
     } catch (error) {
         return fromErrorToActionState(error, formData);

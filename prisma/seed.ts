@@ -92,6 +92,7 @@ const seed = async () => {
         data: tickets.map((ticket) => ({
             ...ticket,
             userId: dbUsers[0].id,
+            createdAt: new Date(Date.now() - Math.floor(Math.random() * 100000)),
         }))
     });
 
