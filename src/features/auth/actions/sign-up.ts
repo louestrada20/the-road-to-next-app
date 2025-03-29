@@ -6,6 +6,7 @@ import {ActionState, fromErrorToActionState} from "@/components/form/utils/to-ac
 import {setSessionCookie} from "@/features/auth/cookie";
 import {hashPassword} from "@/features/auth/password";
 import {createSession, generateRandomSessionToken} from "@/features/auth/session";
+import {generateEmailVerificationCode} from "@/features/auth/utils/generate-email-verification-code";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
 import {ticketsPath} from "@/paths";
@@ -43,9 +44,16 @@ export const signUp = async (_actionState: ActionState, formData: FormData) => {
             passwordHash,
             }
         });
+
+        const verificationCode = await generateEmailVerificationCode(user.id, email);
+        console.log(verificationCode);
+
+
         await inngest.send({name: "app/account.welcome",
             data: {userId: user.id}
-        })
+        });
+
+
 
         const sessionToken = generateRandomSessionToken();
         const session = await createSession(sessionToken, user.id);

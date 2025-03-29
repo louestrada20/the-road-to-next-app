@@ -77,6 +77,10 @@ export default {
 				from: {transform: "translateX(-100%)"},
 				to: {transform: "translateX(0)"},
 			},
+			"caret-blink": {
+				"0%,70%,100%": { opacity: "1" },
+				"20%,50%": { opacity: "0" },
+			},
 		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -87,6 +91,7 @@ export default {
   			'fade-in-from-top': 'fade-in-from-top 0.5s ease-out',
 			'header-from-top': 'header-from-top 0.5s ease-out',
 			"sidebar-from-left": "sidebar-from-left 0.5s ease-out",
+			"caret-blink": "caret-blink 1.25s ease-out infinite",
   		}
   	}
   },

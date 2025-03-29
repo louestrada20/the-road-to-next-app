@@ -9,12 +9,14 @@ const users = [
         email: "admin@admin.com",
         firstName: "adminFirstName",
         lastName: "adminLastName",
+        emailVerified: true,
     },
     {
         username: "Louis",
         email: "louestrada31@gmail.com",
         firstName: "Louis",
         lastName: "EstLastName",
+        emailVerified: false,
     }
 ]
 

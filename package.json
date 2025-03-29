@@ -35,6 +35,7 @@
     "date-fns": "^3.6.0",
     "fastest-levenshtein": "^1.0.16",
     "inngest": "^3.34.0",
+    "input-otp": "^1.4.2",
     "lucia": "^3.2.2",
     "lucide-react": "^0.475.0",
     "next": "^15.2.4",
