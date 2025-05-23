@@ -17,7 +17,9 @@ const emailVerificationSchema = z.object({
 export const emailVerification = async (_actionState: ActionState, formData: FormData) => {
 
     const {user} = await getAuthOrRedirect({
-        checkEmailVerified: false
+        checkEmailVerified: false,
+        checkOrganization: false,
+        checkActiveOrganization: false,
     });
 
     try {
@@ -31,7 +33,6 @@ export const emailVerification = async (_actionState: ActionState, formData: For
         }
 
 
-        // TODO - Implement email verification logic
 
         await prisma.session.deleteMany({
             where: {userId: user.id}

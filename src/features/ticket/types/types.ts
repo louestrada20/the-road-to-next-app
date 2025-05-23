@@ -5,5 +5,5 @@ export type TicketWithMetaData = Prisma.TicketGetPayload<{
             select: {username: true};
         };
     };
-}> & {isOwner: boolean};
+}> & {isOwner: boolean; permissions: {canDeleteTicket: boolean}};
 

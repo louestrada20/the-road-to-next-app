@@ -8,6 +8,52 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model Organization {
+  id            String     @id @default(cuid())
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  name          String
+  memberships   Membership[]
+  tickets       Ticket[]
+  invitations   Invitation[]
+}
+
+model Invitation {
+  email           String
+  tokenHash       String          @unique
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId  String
+  invitedByUser   User?           @relation(fields: [invitedByUserId], references: [id], onDelete: SetNull)
+  invitedByUserId String?
+
+  @@index([organizationId])
+}
+
+model Membership {
+  organization        Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId      String
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              String
+
+  joinedAt   DateTime    @default(now())
+  isActive   Boolean
+  membershipRole    MembershipRole     @default(MEMBER)
+
+
+
+  canDeleteTicket  Boolean   @default(true)
+  @@id(name: "membershipId", [organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+enum MembershipRole {
+  MEMBER
+  ADMIN
+}
+
 model User {
   id                  String                @id @default(cuid())
   username            String                @unique
@@ -16,11 +62,13 @@ model User {
   passwordHash        String
   passwordResetTokens PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  memberships         Membership[]
   sessions            Session[]
   firstName           String?
   lastName            String?
   comments            Comment[]
   tickets             Ticket[]
+  invitesByUser       Invitation[]
 
 }
 
@@ -64,6 +112,9 @@ model Ticket {
   userId    String
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   comments  Comment[]
+  organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId   String
+
   @@index([userId])
 }
 

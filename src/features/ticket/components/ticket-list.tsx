@@ -9,6 +9,7 @@ import {ParsedSearchParams} from "@/features/ticket/search-params";
 type TicketListProps = {
     userId?: string;
     searchParams: ParsedSearchParams;
+    byOrganization?: boolean;
 }
 
 const ticketSortSelectOptions = [
@@ -34,8 +35,8 @@ const ticketSortSelectOptions = [
     },
 ];
 
- const TicketList = async ({userId, searchParams}: TicketListProps) => {
-    const {list: tickets, metadata: ticketMetaData } = await getTickets(userId, searchParams);
+ const TicketList = async ({userId, searchParams, byOrganization = false}: TicketListProps) => {
+    const {list: tickets, metadata: ticketMetaData } = await getTickets(userId, byOrganization, searchParams);
 
 
     return (

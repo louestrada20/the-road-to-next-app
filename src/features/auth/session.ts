@@ -80,7 +80,6 @@ export const validateSession = async (sessionToken: string) => {
             data: { expiresAt: session.expiresAt, refreshedAt: session.refreshedAt },
         });
     }
-
     return { session: { ...session }, user, fresh };
 };
 

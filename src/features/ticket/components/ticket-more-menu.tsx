@@ -1,5 +1,5 @@
 "use client"
-import {Ticket, TicketStatus} from "@prisma/client";
+import { TicketStatus} from "@prisma/client";
 import { LucideTrash} from "lucide-react";
 import {toast} from "sonner"
 import {useConfirmDialog} from "@/components/confirm-dialog";
@@ -9,12 +9,19 @@ import {
     DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 import {deleteTicket} from "@/features/ticket/actions/delete-ticket";
 import {updateTicketStatus} from "@/features/ticket/actions/update-ticket-status";
 import {TICKET_STATUS_LABELS} from "@/features/ticket/constants";
+import {TicketWithMetaData} from "@/features/ticket/types/types";
 
 type TicketMoreMenuProps = {
-    ticket: Ticket;
+    ticket: TicketWithMetaData;
     trigger: React.ReactNode
 }
 const TicketMoreMenu = ({ticket, trigger}: TicketMoreMenuProps) => {
@@ -22,7 +29,7 @@ const TicketMoreMenu = ({ticket, trigger}: TicketMoreMenuProps) => {
     const [deleteButton, deleteDialog ] = useConfirmDialog(
         {
             action: deleteTicket.bind(null, ticket.id),
-            trigger: ( <DropdownMenuItem className="cursor-pointer">
+            trigger: ( <DropdownMenuItem disabled={!ticket.permissions.canDeleteTicket} className="cursor-pointer">
                     <LucideTrash className=" h-4 w-4"/>
                     <span>Delete</span>
             </DropdownMenuItem>),
@@ -57,6 +64,32 @@ const TicketMoreMenu = ({ticket, trigger}: TicketMoreMenuProps) => {
 
 
 
+    const renderDeleteButton = () => {
+        if (ticket.permissions.canDeleteTicket) {
+            return deleteButton;
+        }
+
+        // Create a non-disabled version of the delete button for the tooltip
+        const disabledDeleteButton = (
+            <DropdownMenuItem className="cursor-not-allowed opacity-50">
+                <LucideTrash className="h-4 w-4"/>
+                <span>Delete</span>
+            </DropdownMenuItem>
+        );
+
+        return (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        {disabledDeleteButton}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>You do not have permission to delete this ticket.</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    };
     return (
         <>
             {deleteDialog}
@@ -66,7 +99,7 @@ const TicketMoreMenu = ({ticket, trigger}: TicketMoreMenuProps) => {
                 <DropdownMenuContent className="w-56 " side="right">
                     {ticketStatusRadioGroupItems}
                     <DropdownMenuSeparator />
-                    {deleteButton}
+                    {renderDeleteButton()}
                 </DropdownMenuContent>
             </DropdownMenu>
         </>

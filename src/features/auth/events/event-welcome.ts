@@ -9,10 +9,10 @@ export type WelcomeEventArgs = {
 }
 
 export const welcomeEvent = inngest.createFunction(
-    {id: "welcome"},
-    {event: "app/account.welcome", },
+    {id: "trigger-welcome-email"},
+    {event: "app/auth.sign-up", },
     async ({event, step}) => {
-        await step.sleep("wait-a-moment-after-signup", "10m");
+         await step.sleep("wait-a-moment-after-signup", "2m");
         const {userId} = event.data;
         const user = await prisma.user.findUniqueOrThrow({
             where: {id: userId},

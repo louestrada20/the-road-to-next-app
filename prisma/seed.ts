@@ -16,8 +16,8 @@ const users = [
         email: "louestrada31@gmail.com",
         firstName: "Louis",
         lastName: "EstLastName",
-        emailVerified: false,
-    }
+        emailVerified: true,
+    },
 ]
 
 const tickets = [
@@ -80,9 +80,18 @@ const seed = async () => {
     await prisma.user.deleteMany();
     await prisma.ticket.deleteMany();
     await prisma.comment.deleteMany();
+    await prisma.membership.deleteMany();
+    await prisma.organization.deleteMany();
+
 
 
     // recreate them.
+    const dbOrganization = await prisma.organization.create({
+        data: {
+            name: "Organization 1",
+        }
+    })
+
     const dbUsers = await prisma.user.createManyAndReturn({
         data: users.map((user) => ({
             ...user,
@@ -90,11 +99,29 @@ const seed = async () => {
         })),
     });
 
+    await prisma.membership.createMany({
+        data: [{
+            userId: dbUsers[0].id,
+            organizationId: dbOrganization.id,
+            isActive: true,
+            membershipRole: "ADMIN"
+        },
+            {
+                userId: dbUsers[1].id,
+                organizationId: dbOrganization.id,
+                isActive: true,
+                membershipRole: "MEMBER"
+            },
+
+        ]
+    })
+
     const dbTickets = await prisma.ticket.createManyAndReturn({
         data: tickets.map((ticket) => ({
             ...ticket,
             userId: dbUsers[0].id,
             createdAt: new Date(Date.now() - Math.floor(Math.random() * 100000)),
+            organizationId: dbOrganization.id,
         }))
     });
 
