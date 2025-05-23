@@ -4,7 +4,6 @@ import {prisma} from "@/lib/prisma";
 
 export const getActiveOrganization = async () => {
     const {user} = await getAuth();
-    console.log('get auth from active organiation call!')
 
     if (!user) {
         return null;

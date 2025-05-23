@@ -8,7 +8,6 @@ import {validateSession} from "@/features/auth/session";
 export const getAuth = cache(async () => {
     const sessionToken =
         (await cookies()).get(SESSION_COOKIE_NAME)?.value ?? null;
-    console.log('get auth call!')
 
     if (!sessionToken) {
         return {
