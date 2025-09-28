@@ -26,6 +26,9 @@ const seed = async () => {
         await stripe.customers.del(customer.id);
     }
 
+    // Also clean up database records
+    await prisma.stripeCustomer.deleteMany({});
+
     // seed
 
     const organization = await prisma.organization.findFirstOrThrow({
@@ -50,14 +53,8 @@ const seed = async () => {
 
 
 
-    await prisma.stripeCustomer.upsert({
-        where: {
-            organizationId: organization.id,
-        },
-        update: {
-            customerId: customer.id,
-        },
-        create: {
+    await prisma.stripeCustomer.create({
+        data: {
             customerId: customer.id,
             organizationId: organization.id,
         },
