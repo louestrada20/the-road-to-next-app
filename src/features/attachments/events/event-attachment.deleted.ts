@@ -17,7 +17,7 @@ export const attachmentDeletedEvent = inngest.createFunction(
 {id: "attachment-deleted"},
 {event: "app/attachment.deleted"},
     async ({event}) => {
-    const { attachmentId, fileName, thumbnailUrl } = event.data;
+    const { attachmentId, fileName } = event.data;
     try {
         // Delete original file using new abstraction
         await deleteFile(attachmentId, fileName);

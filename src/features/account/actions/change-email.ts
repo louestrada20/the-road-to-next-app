@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import {z} from "zod";
 import { setCookieByKey } from "@/actions/cookies";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
-import {EmailChangeEventArgs} from "@/features/account/events/event-email-change";  
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import { getClientIp } from "@/lib/get-client-ip";
 import {inngest} from "@/lib/inngest";

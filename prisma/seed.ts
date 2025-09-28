@@ -193,7 +193,7 @@ const seed = async () => {
     // Create default attachments for the first ticket
     console.log('Creating default attachments for Ticket 1...');
     try {
-        await createDefaultAttachments(dbTickets[0].id, dbOrganization.id);
+        await createDefaultAttachments(dbTickets[0].id);
         console.log('Default attachments created successfully!');
     } catch (error) {
         console.error('Failed to create default attachments:', error);

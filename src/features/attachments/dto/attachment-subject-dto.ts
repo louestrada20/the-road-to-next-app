@@ -43,11 +43,11 @@ export const fromComment = (comment: AttachmentSubject | null) => {
 }
 
 // Helper function to get attachment subject from attachment data with includes
-export const fromAttachment = (attachment: any): Type | null => {
+export const fromAttachment = (attachment: Record<string, unknown>): Type | null => {
     if (attachment.entity === 'TICKET' && attachment.ticket) {
-        return fromTicket(attachment.ticket);
+        return fromTicket(attachment.ticket as AttachmentSubject);
     } else if (attachment.entity === 'COMMENT' && attachment.comment) {
-        return fromComment(attachment.comment);
+        return fromComment(attachment.comment as AttachmentSubject);
     }
     return null;
 }

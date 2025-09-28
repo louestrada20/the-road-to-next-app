@@ -1,6 +1,5 @@
 "use server"
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
 import { z } from "zod"
 import { setCookieByKey } from "@/actions/cookies"
 import { ActionState, fromErrorToActionState, toActionState } from "@/components/form/utils/to-action-state"
@@ -18,7 +17,7 @@ export const renameOrganization = async (
   formData: FormData
 ) => {
   // Check admin permissions
-  const { user, activeOrganization } = await getAdminOrRedirect(organizationId)
+  await getAdminOrRedirect(organizationId)
 
   try {
     // Validate input

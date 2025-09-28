@@ -101,7 +101,7 @@ export const passwordReset = async (tokenId: string, _actionState: ActionState, 
             await setSessionCookie(sessionToken, session.expiresAt);
             sessionCreated = true;
             toastMessage = "Password reset successfully! You are now signed in.";
-        } catch (sessionError) {
+        } catch {
             sessionCreated = false;
             toastMessage = "Password reset successful, but there was an issue signing you in. Please sign in manually.";
         }

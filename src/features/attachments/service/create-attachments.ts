@@ -11,7 +11,7 @@ type CreateAttachmentsArgs = {
     files: File[];
 }
 
-export const createAttachments = async ({files, entity, entityId, subject}: CreateAttachmentsArgs) => {
+export const createAttachments = async ({files, entity, entityId}: CreateAttachmentsArgs) => {
     const attachments = [];
 
     try {

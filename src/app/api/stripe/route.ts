@@ -55,11 +55,12 @@ export async function POST(req: Request) {
             case "invoice.payment_failed":
                 await handlePaymentFailed(event.data.object, event.created);
                 break;
-            case "customer.subscription.incomplete" as any:
-            case "customer.subscription.incomplete_expired" as any:
-            case "customer.subscription.past_due" as any:
-            case "customer.subscription.unpaid" as any:
-                await handleSubscriptionPaymentIssue(event.data.object as Stripe.Subscription, event.created);
+            case "customer.subscription.updated":
+                // Handle subscription status changes (incomplete, past_due, etc.)
+                const subscription = event.data.object as Stripe.Subscription;
+                if (['incomplete', 'incomplete_expired', 'past_due', 'unpaid'].includes(subscription.status)) {
+                    await handleSubscriptionPaymentIssue(subscription, event.created);
+                }
                 break;
             default:
                 console.log(`Unhandled event type ${event.type}`);

@@ -18,7 +18,7 @@ const DEFAULT_ATTACHMENTS = [
 // uploads/<attachmentId>/<fileName>
 const buildKey = (attachmentId: string, fileName: string) => `uploads/${attachmentId}/${fileName}`;
 
-export const createDefaultAttachments = async (ticketId: string, organizationId: string) => {
+export const createDefaultAttachments = async (ticketId: string) => {
     const attachments = [];
 
     for (const attachmentInfo of DEFAULT_ATTACHMENTS) {

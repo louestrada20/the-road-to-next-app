@@ -22,7 +22,7 @@ const EmailChangeVerification = ({toName, code}: EmailChangeVerificationProps) =
                         </Section>
                         <Section>
                             <Text className="text-sm text-gray-600">
-                                This code will expire in 2 hours. If you didn't request this change, please ignore this email.
+                                This code will expire in 2 hours. If you didn&apos;t request this change, please ignore this email.
                             </Text>
                         </Section>
                     </Container>

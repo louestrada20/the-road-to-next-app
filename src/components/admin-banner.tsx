@@ -1,4 +1,4 @@
-import { LucideInfo,LucideShield } from "lucide-react"
+import { LucideShield } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const AdminBanner = () => {

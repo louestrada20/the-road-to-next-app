@@ -5,7 +5,6 @@ import { FileMetadata, UploadOptions } from "./types";
 
 // Configuration
 const BUCKET_NAME = process.env.AWS_BUCKET_NAME!;
-const REGION = process.env.AWS_REGION || 'us-west-1';
 
 // Build S3 key helpers (new unified layout)
 const buildKey = (id: string, name: string, thumb = false) =>
