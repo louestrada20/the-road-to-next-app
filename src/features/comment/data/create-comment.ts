@@ -1,9 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { 
+  CommentPayload, 
   CreateCommentArgs, 
-  IncludeOptions, 
-  CommentPayload 
-} from "../types/create-comment";
+  IncludeOptions} from "../types/create-comment";
 
 export async function createComment<T extends IncludeOptions>({
   userId,

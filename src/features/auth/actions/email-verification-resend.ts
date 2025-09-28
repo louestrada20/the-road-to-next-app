@@ -2,8 +2,8 @@
 
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
-import {generateEmailVerificationCode} from "@/features/auth/utils/generate-email-verification-code";
 import {canResendVerificationEmail} from "@/features/auth/utils/can-resend-verification-email";
+import {generateEmailVerificationCode} from "@/features/auth/utils/generate-email-verification-code";
 import {sendEmailVerification} from "@/features/email-verification/send-email-verification";
 import { getClientIp } from "@/lib/get-client-ip";
 import { limitEmail, limitIp } from "@/lib/rate-limit";

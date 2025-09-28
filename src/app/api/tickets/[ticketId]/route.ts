@@ -1,10 +1,10 @@
-import {getTicket} from "@/features/ticket/queries/get-ticket";
-import { ticketsPath } from "@/paths";  
-import { prisma } from "@/lib/prisma";
-import { getClientIp } from "@/lib/get-client-ip";
-import { limitIp } from "@/lib/rate-limit"; 
-import { hashToken } from "@/utils/crypto"; 
 import { revalidatePath } from "next/cache";          
+import {getTicket} from "@/features/ticket/queries/get-ticket";
+import { getClientIp } from "@/lib/get-client-ip";
+import { prisma } from "@/lib/prisma";
+import { limitIp } from "@/lib/rate-limit"; 
+import { ticketsPath } from "@/paths";  
+import { hashToken } from "@/utils/crypto"; 
 
 export async function GET(_request: Request, { params }: { params: Promise<{ticketId: string}>}) {
     const ip = await getClientIp();

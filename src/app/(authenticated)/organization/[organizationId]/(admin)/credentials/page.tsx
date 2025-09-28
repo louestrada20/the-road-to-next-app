@@ -1,8 +1,8 @@
-import {Heading} from "@/components/heading"
-import {OrganizationBreadcrumbs} from "@/app/(authenticated)/organization/[organizationId]/(admin)/_navigation/tabs";
-import CredentialCreateButton from "@/features/credential/components/credential-create-button";
 import {Suspense} from "react";
+import {OrganizationBreadcrumbs} from "@/app/(authenticated)/organization/[organizationId]/(admin)/_navigation/tabs";
+import {Heading} from "@/components/heading"
 import {Spinner} from "@/components/spinner";
+import CredentialCreateButton from "@/features/credential/components/credential-create-button";
 import CredentialList from "@/features/credential/components/credential-list";
 
 type CredentialsPageProps = {

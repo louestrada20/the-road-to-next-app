@@ -6,11 +6,11 @@ import {ActionState, fromErrorToActionState, toActionState} from "@/components/f
 import {setSessionCookie} from "@/features/auth/cookie";
 import {hashPassword} from "@/features/auth/password";
 import {createSession, generateRandomSessionToken} from "@/features/auth/session";
+import { getClientIp } from "@/lib/get-client-ip";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
-import {ticketsPath} from "@/paths";
-import { getClientIp } from "@/lib/get-client-ip";
 import { limitEmail, limitIp } from "@/lib/rate-limit";
+import {ticketsPath} from "@/paths";
 
 const signUpSchema = z.object({
     username: z.string().min(1).max(191).refine((value) => !value.includes(" "), "Username cannot use spaces."),

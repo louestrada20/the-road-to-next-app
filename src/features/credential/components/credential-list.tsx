@@ -1,6 +1,5 @@
 import {format} from "date-fns";
 import { Placeholder } from "@/components/placeholder";
-import {getCredentials} from "@/features/credential/queries/get-credentials";
 import {
     Table,
     TableBody,
@@ -9,6 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {getCredentials} from "@/features/credential/queries/get-credentials";
 import { RevokeCredentialButton } from "./revoke-credential-button";
 
 type CredentialListProps = {   

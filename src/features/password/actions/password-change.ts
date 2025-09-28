@@ -3,10 +3,10 @@ import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {verifyPasswordHash} from "@/features/auth/password";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
+import { getClientIp } from "@/lib/get-client-ip";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
-import { getClientIp } from "@/lib/get-client-ip";
-import { limitIp, limitEmail } from "@/lib/rate-limit";
+import { limitEmail,limitIp } from "@/lib/rate-limit";
 
 
 const passwordChangeSchema = z.object({

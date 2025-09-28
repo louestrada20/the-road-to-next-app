@@ -3,13 +3,13 @@
 import {revalidatePath} from "next/cache";
 import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
-import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
-import {ticketPath} from "@/paths";
+import * as attachmentSubjectDTO from "@/features/attachments/dto/attachment-subject-dto";
 import { filesSchema } from "@/features/attachments/schema/files";
 import * as attachmentService from "@/features/attachments/service";   
+import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import * as commentData from "@/features/comment/data";
-import * as attachmentSubjectDTO from "@/features/attachments/dto/attachment-subject-dto";
 import * as ticketService from "@/features/ticket/service";
+import {ticketPath} from "@/paths";
 const createCommentSchema = z.object({
     content: z.string().min(1).max(1024),
     files: filesSchema,

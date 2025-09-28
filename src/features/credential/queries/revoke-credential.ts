@@ -1,8 +1,8 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { toActionState } from "@/components/form/utils/to-action-state";
 import { getAdminOrRedirect } from "@/features/memberships/queries/get-admin-or-redirect";
 import {prisma} from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 
 
 export const revokeCredential = async (organizationId: string, credentialId: string) => {

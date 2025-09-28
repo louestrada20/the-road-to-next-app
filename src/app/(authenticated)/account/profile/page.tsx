@@ -1,8 +1,8 @@
 import {AccountTabs} from "@/app/(authenticated)/account/_navigation/tabs";
 import {CardCompact} from "@/components/card-compact";
 import {Heading} from "@/components/heading";
-import {ChangeProfileForm} from "@/features/account/components/change-profile-form";
 import {ChangeEmailForm} from "@/features/account/components/change-email-form";
+import {ChangeProfileForm} from "@/features/account/components/change-profile-form";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 
 const ProfilePage = async () => {

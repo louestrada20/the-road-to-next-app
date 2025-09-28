@@ -1,10 +1,10 @@
 "use server"
 import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
+import { getClientIp } from "@/lib/get-client-ip";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
-import { getClientIp } from "@/lib/get-client-ip";
-import { limitIp, limitEmail } from "@/lib/rate-limit";
+import { limitEmail,limitIp } from "@/lib/rate-limit";
 
 const passwordForgotSchema = z.object({
     email: z.string().min(1, {message: "is required"}).max(191).email(),

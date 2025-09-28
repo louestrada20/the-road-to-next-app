@@ -1,6 +1,6 @@
+import { z } from "zod";
 import { ACCEPTED, MAX_SIZE } from "../constants";
 import { sizeInMB } from "../utils/size";
-import { z } from "zod";
 
 export const filesSchema =  z.custom<FileList>().transform((files) => Array.from(files))
 .transform((files) => files.filter((file) => file.size > 0))

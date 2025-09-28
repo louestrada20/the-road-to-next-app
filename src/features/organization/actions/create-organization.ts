@@ -1,14 +1,14 @@
 "use server"
+import { Organization } from "@prisma/client";
 import {redirect} from "next/navigation";
 import {z} from "zod";
 import {setCookieByKey} from "@/actions/cookies";
 import {ActionState, fromErrorToActionState,} from "@/components/form/utils/to-action-state"
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
+import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
 import {ticketsPath} from "@/paths";
-import { Organization } from "@prisma/client";
 import { membershipsPath } from "@/paths";
-import {inngest} from "@/lib/inngest";
 
 const createOrganizationSchema = z.object({
     name: z.string().min(1).max(191),

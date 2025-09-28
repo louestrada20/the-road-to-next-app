@@ -1,7 +1,7 @@
+import {sendEmailChangeVerification} from "@/features/account/emails/send-email-change-verification";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
 import {generateRandomCode} from "@/utils/crypto";
-import {sendEmailChangeVerification} from "@/features/account/emails/send-email-change-verification";
 
 const EMAIL_CHANGE_TOKEN_LIFETIME_MS = 1000 * 60 * 60 * 2; // 2 hours
 

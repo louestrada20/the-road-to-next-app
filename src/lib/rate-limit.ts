@@ -1,5 +1,5 @@
-import { Redis } from "@upstash/redis";
 import { Duration, Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 // 1) Single Redis instance shared across all functions
 export const redis = new Redis({

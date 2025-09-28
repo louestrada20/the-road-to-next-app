@@ -1,8 +1,8 @@
-import {Button} from "@/components/ui/button";
+import { useTransition } from "react";  
 import {PAGE_SIZES} from "@/components/pagination/constants";   
+import {Button} from "@/components/ui/button";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {PaginatedData} from "@/types/pagination";
-import { useTransition } from "react";  
 
 type PageAndSize = {
     page: number;

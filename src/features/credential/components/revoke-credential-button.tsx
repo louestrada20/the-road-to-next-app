@@ -1,12 +1,10 @@
 "use client";
 
-import { revokeCredential } from "../queries/revoke-credential";
-
 import { LucideLoaderCircle, LucideTrash } from "lucide-react";    
-
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useConfirmDialog } from "@/components/confirm-dialog";
+import { Button } from "@/components/ui/button";
+import { revokeCredential } from "../queries/revoke-credential";
 
 
 

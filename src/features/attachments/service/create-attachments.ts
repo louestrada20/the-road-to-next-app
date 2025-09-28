@@ -1,7 +1,7 @@
 
 import {AttachmentEntity} from "@prisma/client";
-import * as attachmentData from "../data";
 import { uploadFile } from "@/lib/storage";
+import * as attachmentData from "../data";
 import * as attachmentSubjectDto from "../dto/attachment-subject-dto";
 
 type CreateAttachmentsArgs = {

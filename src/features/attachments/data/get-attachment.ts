@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { GetAttachmentArgs, IncludeOptions, AttachmentPayload } from "../types/get-attachment";    
+import { AttachmentPayload,GetAttachmentArgs, IncludeOptions } from "../types/get-attachment";    
 
 export async function getAttachment<T extends IncludeOptions>({id, options}: GetAttachmentArgs & { options?: T }): Promise<AttachmentPayload<T>> {
     const includeTicket = options?.includeTicket === true ? {

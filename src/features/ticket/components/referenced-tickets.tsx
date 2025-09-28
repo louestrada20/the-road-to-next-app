@@ -1,6 +1,6 @@
-import { CardCompact } from "@/components/card-compact";
-import Link from "next/link";   
 import { LucideArrowUpRightFromSquare } from "lucide-react";
+import Link from "next/link";   
+import { CardCompact } from "@/components/card-compact";
 import {ticketPath} from "@/paths";
 import {getReferencedTickets} from "../queries/get-referenced-tickets";
 

@@ -7,18 +7,18 @@ import {Form} from "@/components/form/form";
 import {SubmitButton} from "@/components/form/submit-button";
 import {EMPTY_ACTION_STATE} from "@/components/form/utils/to-action-state";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import {createCredential} from "@/features/credential/actions/create-credential";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogFooter,
 } from "@/components/ui/dialog";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {createCredential} from "@/features/credential/actions/create-credential";
 import CopySecret from "@/features/credential/components/copy-secret";
 
 type CredentialCreateButtonProps = {

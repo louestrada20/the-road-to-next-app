@@ -7,10 +7,10 @@ import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
-import * as attachmentData from "../data";
-import { getAttachmentPath } from "../utils/attachment-helper";
 import { deleteFile } from "@/lib/storage";
+import * as attachmentData from "../data";
 import * as attachmentSubjectDTO from "../dto/attachment-subject-dto";
+import { getAttachmentPath } from "../utils/attachment-helper";
 
 
 export const deleteAttachment = async (id: string) => {

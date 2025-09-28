@@ -1,6 +1,6 @@
+import { StripeSubscriptionStatus } from "@prisma/client";
 import Stripe from "stripe";
 import {prisma} from "@/lib/prisma";
-import { StripeSubscriptionStatus } from "@prisma/client";
 
 export const updateStripeSubscription = async (subscription: Stripe.Subscription, eventAt: number) => {
     const stripeCustomer = await prisma.stripeCustomer.findUniqueOrThrow({

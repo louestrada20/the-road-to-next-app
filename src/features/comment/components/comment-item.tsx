@@ -1,9 +1,9 @@
 
 import {format} from "date-fns"
+import Content from "@/components/content";
 import {Card} from "@/components/ui/card";
 import {Separator} from "@/components/ui/separator";
 import {CommentWithMetadata} from "@/features/comment/types";
-import Content from "@/components/content";
 
 type CommentItemProps = {
     comment: CommentWithMetadata,

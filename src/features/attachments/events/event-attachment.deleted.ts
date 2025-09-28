@@ -1,6 +1,6 @@
 import { AttachmentEntity } from "@prisma/client";
-import { deleteFile } from "@/lib/storage";
 import { inngest } from "@/lib/inngest";
+import { deleteFile } from "@/lib/storage";
 
 export type AttachmentDeletedEventArgs = {
     data: {

@@ -1,10 +1,9 @@
 "use client"
-import {CardCompact} from "@/components/card-compact";
-
-import {verifyEmailChange} from "@/features/account/actions/verify-email-change";
-import {InputOTPForm} from "@/components/input-otp-form";
-import {EMPTY_ACTION_STATE} from "@/components/form/utils/to-action-state";
 import {useActionState} from "react";
+import {CardCompact} from "@/components/card-compact";
+import {EMPTY_ACTION_STATE} from "@/components/form/utils/to-action-state";
+import {InputOTPForm} from "@/components/input-otp-form";
+import {verifyEmailChange} from "@/features/account/actions/verify-email-change";
 export default function EmailChangeVerify() {
   const [state, action] = useActionState(verifyEmailChange, EMPTY_ACTION_STATE);
 

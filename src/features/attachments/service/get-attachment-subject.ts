@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
 import {AttachmentEntity} from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import * as attachmentSubjectDTO from "../dto/attachment-subject-dto";
 
 

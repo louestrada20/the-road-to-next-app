@@ -1,5 +1,5 @@
-import { getAdminOrRedirect } from "@/features/memberships/queries/get-admin-or-redirect"
 import { AdminBanner } from "@/components/admin-banner"
+import { getAdminOrRedirect } from "@/features/memberships/queries/get-admin-or-redirect"
 
 export default async function AdminLayout({
     children,

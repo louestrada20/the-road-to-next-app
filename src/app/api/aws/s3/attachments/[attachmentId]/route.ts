@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
-import { s3 } from "@/lib/aws";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { NextRequest, NextResponse } from "next/server";
 import * as attachmentData from "@/features/attachments/data";
 import { fromAttachment } from "@/features/attachments/dto/attachment-subject-dto";
+import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { s3 } from "@/lib/aws";
 import { getClientIp } from "@/lib/get-client-ip";
 import { limitIp } from "@/lib/rate-limit";
 

@@ -1,6 +1,6 @@
 "use client";
 import { Attachment } from "@prisma/client";
-import { useState, useEffect } from "react";
+import { useEffect,useState } from "react";
 import { isImageFileByName } from "@/features/attachments/utils/image-utils";
 
 type AttachmentThumbnailProps = {

@@ -1,13 +1,10 @@
-import { Heading } from "@/components/heading";
-
- 
-import { OrganizationBreadcrumbs } from "../_navigation/tabs";
-   
 import { LucideSettings2 } from "lucide-react";
-import { CustomerPortalForm } from "@/features/stripe/components/customer-portal-form"; 
 import { Suspense } from "react";
+import { Heading } from "@/components/heading";
 import { Spinner } from "@/components/spinner";
+import { CustomerPortalForm } from "@/features/stripe/components/customer-portal-form"; 
 import { Products } from "@/features/stripe/components/products";
+import { OrganizationBreadcrumbs } from "../_navigation/tabs";
 
 type SubscriptionPageProps = {
     params: Promise<{organizationId: string}>;

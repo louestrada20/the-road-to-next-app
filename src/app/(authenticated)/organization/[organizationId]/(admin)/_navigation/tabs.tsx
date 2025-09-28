@@ -1,9 +1,9 @@
 "use client";
 
 import { useParams, usePathname } from "next/navigation";
-import { Breadcrumbs } from "@/components/breadcrumbs"
 import { AdminBadge } from "@/components/admin-badge"
-import { invitationsPath, membershipsPath, organizationPath, credentialsPath, subscriptionPath } from "@/paths"; 
+import { Breadcrumbs } from "@/components/breadcrumbs"
+import { credentialsPath, invitationsPath, membershipsPath, organizationPath, subscriptionPath } from "@/paths"; 
 
 const OrganizationBreadcrumbs = () => {
     const params = useParams<{organizationId: string}>();

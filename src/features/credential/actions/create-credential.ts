@@ -3,9 +3,9 @@
 import {revalidatePath} from "next/cache";
 import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
+import {generateCredential} from "@/features/credential/utils/generate-credential";
 import {getAdminOrRedirect} from "@/features/memberships/queries/get-admin-or-redirect";
 import {credentialsPath} from "@/paths";
-import {generateCredential} from "@/features/credential/utils/generate-credential";
 
 
 const createCredentialSchema = z.object({

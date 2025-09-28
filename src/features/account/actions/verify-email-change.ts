@@ -3,13 +3,13 @@ import {redirect} from "next/navigation";
 import {z} from "zod";
 import {setCookieByKey} from "@/actions/cookies";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
-import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {setSessionCookie} from "@/features/auth/cookie";
+import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {createSession, generateRandomSessionToken} from "@/features/auth/session";
-import {prisma} from "@/lib/prisma";
-import {accountProfilePath} from "@/paths";
 import { getClientIp } from "@/lib/get-client-ip";
+import {prisma} from "@/lib/prisma";
 import { limitIp } from "@/lib/rate-limit";
+import {accountProfilePath} from "@/paths";
 
 const verifyEmailChangeSchema = z.object({
     otp: z.string().length(8)
