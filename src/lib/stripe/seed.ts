@@ -50,8 +50,14 @@ const seed = async () => {
 
 
 
-    await prisma.stripeCustomer.create({
-        data: {
+    await prisma.stripeCustomer.upsert({
+        where: {
+            organizationId: organization.id,
+        },
+        update: {
+            customerId: customer.id,
+        },
+        create: {
             customerId: customer.id,
             organizationId: organization.id,
         },
