@@ -26,13 +26,24 @@ export const uploadFileToS3 = async (
   const key = `uploads/${fileId}/${file.name}`; // unified key pattern
 
   // Upload original file
-  await s3.send(new PutObjectCommand({
-    Bucket: BUCKET_NAME,
-    Key: key,
-    Body: buffer,
-    ContentType: file.type,
-    Metadata: options?.metadata,
-  }));
+  try {
+    await s3.send(new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: file.type,
+      Metadata: options?.metadata,
+    }));
+  } catch (error) {
+    console.error('S3 Upload Error:', {
+      error: error instanceof Error ? error.message : error,
+      bucket: BUCKET_NAME,
+      key,
+      fileSize: file.size,
+      fileName: file.name
+    });
+    throw new Error(`Failed to upload file to S3: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 
   let thumbnailKey: string | undefined;
 

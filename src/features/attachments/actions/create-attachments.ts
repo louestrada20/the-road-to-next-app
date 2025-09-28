@@ -44,7 +44,8 @@ export const createAttachments = async ( {entityId, entity}: CreateAttachmentsAr
     await attachmentService.createAttachments({files, entity, entityId, subject});
 
     } catch (error) {
-    return fromErrorToActionState(error);
+        console.error('Create attachments error:', error);
+        return fromErrorToActionState(error, formData);
     }
 
    
