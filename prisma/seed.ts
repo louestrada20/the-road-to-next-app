@@ -3,7 +3,6 @@ import {hashPassword} from "@/features/auth/password";
 import {createDefaultAttachments} from "@/features/attachments/utils/create-default-attachments";
 import {ListObjectsV2Command, DeleteObjectsCommand} from "@aws-sdk/client-s3";
 import {s3} from "@/lib/aws";
-import { generateCredential } from "@/features/credential/utils/generate-credential";   
 
 const prisma = new PrismaClient();
 
@@ -136,7 +135,9 @@ const seed = async () => {
         data: {
             name: "Organization 1",
         }
-    })
+    });
+
+    console.log(`✓ Created organization: "${dbOrganization.name}" (${dbOrganization.id})`);
 
     const dbUsers = await prisma.user.createManyAndReturn({
         data: users.map((user) => ({
@@ -182,13 +183,6 @@ const seed = async () => {
     });
 
 
-    // NEW: create a default credential for this organisation
-    const seedCredentialSecret = await generateCredential(
-        dbOrganization.id,
-        "Credential 1"
-    );
-
-    console.log('Seed credential secret:', seedCredentialSecret);   
 
     // Clean up any orphaned attachments (those without valid S3 keys)
     console.log('Cleaning up orphaned attachments...');
@@ -211,7 +205,8 @@ const seed = async () => {
 
 
     const t1 = performance.now();
-    console.log(`DB Seed: Finished (${t1 - t0}ms)`)
+    console.log(`✓ DB Seed: Finished successfully (${t1 - t0}ms)`);
+    console.log(`✓ Ready for Stripe seed - run: npm run stripe-seed`);
 }
 
 seed();

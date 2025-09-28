@@ -31,7 +31,7 @@ const seed = async () => {
 
     // seed
 
-    const organization = await prisma.organization.findFirstOrThrow({
+    const organization = await prisma.organization.findFirst({
         include: {
             memberships: {
                 include: {
@@ -40,6 +40,13 @@ const seed = async () => {
             }
         }
     });
+
+    if (!organization) {
+        console.error("No organization found! Please run the Prisma seed first.");
+        throw new Error("No organization found. Run 'npm run prisma-seed' first.");
+    }
+
+    console.log(`Creating Stripe customer for organization: ${organization.name} (${organization.id})`);
 
     const testClock = await stripe.testHelpers.testClocks.create({
         frozen_time: Math.round(new Date().getTime() / 1000)
@@ -59,6 +66,8 @@ const seed = async () => {
             organizationId: organization.id,
         },
     });
+
+    console.log(`✓ Created StripeCustomer record: ${customer.id} for organization: ${organization.id}`);
 
     const productOne = await stripe.products.create({
         name: "Business Plan",
@@ -131,7 +140,10 @@ const seed = async () => {
    
 
     const t1 = performance.now();
-    console.log(`Stripe seed completed in ${t1 - t0} milliseconds`);
+    console.log(`✓ Stripe seed completed successfully in ${t1 - t0} milliseconds`);
+    console.log(`✓ Created customer: ${customer.id}`);
+    console.log(`✓ Created 2 products with 4 prices total`);
+    console.log(`✓ Organization "${organization.name}" is now ready for Stripe operations`);
 }
 
 seed();
