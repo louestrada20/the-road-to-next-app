@@ -14,6 +14,8 @@ export const createCheckoutSession = async (organizationId: string | null | unde
         redirect(signInPath());
     };
 
+    let sessionUrl: string;
+
     try {
         await getAdminOrRedirect(organizationId);
 
@@ -61,7 +63,7 @@ export const createCheckoutSession = async (organizationId: string | null | unde
             return toActionState("ERROR", "Session URL could not be created")
         }
 
-        redirect(session.url);
+        sessionUrl = session.url;
         
     } catch (error) {
         console.error('Stripe checkout session creation failed:', error);
@@ -84,4 +86,7 @@ export const createCheckoutSession = async (organizationId: string | null | unde
         
         return toActionState("ERROR", "Unable to create checkout session. Please try again.");
     }
+
+    // Redirect outside of try/catch to avoid catching NEXT_REDIRECT
+    redirect(sessionUrl);
 }

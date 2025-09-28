@@ -14,6 +14,8 @@ export const createCustomerPortal = async (organizationId: string | null | undef
         redirect(signInPath())
     };
 
+    let sessionUrl: string;
+
     try {
         await getAdminOrRedirect(organizationId);
 
@@ -90,7 +92,7 @@ export const createCustomerPortal = async (organizationId: string | null | undef
             return toActionState("ERROR", "Session URL could not be created")
         }
 
-        redirect(session.url);
+        sessionUrl = session.url;
         
     } catch (error) {
         console.error('Stripe customer portal creation failed:', error);
@@ -107,5 +109,8 @@ export const createCustomerPortal = async (organizationId: string | null | undef
         
         return toActionState("ERROR", "Unable to access customer portal. Please try again.");
     }
+
+    // Redirect outside of try/catch to avoid catching NEXT_REDIRECT
+    redirect(sessionUrl);
 };
 
