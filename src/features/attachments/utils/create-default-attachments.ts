@@ -39,24 +39,31 @@ export const createDefaultAttachments = async (ticketId: string) => {
 
             const key = buildKey(attachment.id, attachmentInfo.name);
 
-            // Upload original file
-            await s3.send(new PutObjectCommand({
-                Bucket: process.env.AWS_BUCKET_NAME,
-                Key: key,
-                Body: fileBuffer,
-                ContentType: attachmentInfo.mimeType
-            }));
+            try {
+                // Upload original file
+                await s3.send(new PutObjectCommand({
+                    Bucket: process.env.AWS_BUCKET_NAME,
+                    Key: key,
+                    Body: fileBuffer,
+                    ContentType: attachmentInfo.mimeType
+                }));
 
-            // Persist s3Key
-            await prisma.attachment.update({
-                where: { id: attachment.id },
-                data: { s3Key: key }
-            });
+                // Persist s3Key only if upload succeeded
+                await prisma.attachment.update({
+                    where: { id: attachment.id },
+                    data: { s3Key: key }
+                });
 
-            // Lambda will detect upload and generate thumbnail automatically, no Inngest event needed.
-
-            attachments.push(attachment);
-            console.log(`Created default attachment: ${attachmentInfo.name}`);
+                // Lambda will detect upload and generate thumbnail automatically, no Inngest event needed.
+                attachments.push(attachment);
+                console.log(`Created default attachment: ${attachmentInfo.name}`);
+            } catch (s3Error) {
+                // If S3 upload fails, clean up the database record
+                await prisma.attachment.delete({
+                    where: { id: attachment.id }
+                });
+                console.warn(`Skipped default attachment ${attachmentInfo.name} - S3 upload failed:`, s3Error instanceof Error ? s3Error.message : s3Error);
+            }
         } catch (error) {
             console.error(`Error creating default attachment ${attachmentInfo.name}:`, error);
         }

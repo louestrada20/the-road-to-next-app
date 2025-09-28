@@ -190,6 +190,15 @@ const seed = async () => {
 
     console.log('Seed credential secret:', seedCredentialSecret);   
 
+    // Clean up any orphaned attachments (those without valid S3 keys)
+    console.log('Cleaning up orphaned attachments...');
+    const orphanedAttachments = await prisma.attachment.deleteMany({
+        where: {
+            s3Key: ""
+        }
+    });
+    console.log(`Removed ${orphanedAttachments.count} orphaned attachment records`);
+
     // Create default attachments for the first ticket
     console.log('Creating default attachments for Ticket 1...');
     try {
