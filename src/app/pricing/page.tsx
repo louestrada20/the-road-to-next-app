@@ -4,7 +4,11 @@ import { Products } from "@/features/stripe/components/products";
 const PricingPage = async () => {
     const activeOrganization = await getActiveOrganization();
 
-    return <Products organizationId={activeOrganization?.id} />;
+    if (!activeOrganization) {
+        return <div>No active organization found</div>;
+    }
+
+    return <Products organizationId={activeOrganization.id} />;
 }
 
 export default PricingPage;

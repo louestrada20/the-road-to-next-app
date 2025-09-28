@@ -6,7 +6,10 @@ import { prisma } from "@/lib/prisma";
  * This gets called when invoice.payment_failed webhook is received
  */
 export const handlePaymentFailure = async (invoice: Stripe.Invoice, eventAt: number) => {
-    if (!invoice.customer || !invoice.subscription) {
+    // Type assertion needed because subscription field exists on invoice but isn't in base type
+    const invoiceWithSubscription = invoice as Stripe.Invoice & { subscription?: string };
+    
+    if (!invoice.customer || !invoiceWithSubscription.subscription) {
         console.log('Payment failed for invoice without customer or subscription:', invoice.id);
         return;
     }
@@ -26,7 +29,7 @@ export const handlePaymentFailure = async (invoice: Stripe.Invoice, eventAt: num
     if (!stripeCustomer.eventAt || stripeCustomer.eventAt < eventAt) {
         console.log(`Payment failed for customer ${invoice.customer}:`, {
             invoiceId: invoice.id,
-            subscriptionId: invoice.subscription,
+            subscriptionId: invoiceWithSubscription.subscription,
             amountDue: invoice.amount_due,
             currency: invoice.currency,
             attemptCount: invoice.attempt_count,
