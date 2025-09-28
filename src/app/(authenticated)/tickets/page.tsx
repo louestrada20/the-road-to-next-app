@@ -28,9 +28,18 @@ const TicketsPage =  async ({searchParams}: TicketPageProps) => {
     return (
         <>
         <div className="flex-1 flex flex-col gap-y-8">
-        <Heading title="My Tickets" description="You can toggle between your active organization's tickets, or all of your tickets"  actions={
-            <TicketSwitchView activeOrganizationName={activeOrganization!.name} initialTickets={activeOrganizationTickets} />
-        } />
+            <Heading
+                title="My Tickets"
+                description="You can toggle between your active organization's tickets, or all of your tickets"
+                actions={
+                    activeOrganization ? (
+                        <TicketSwitchView
+                            activeOrganizationName={activeOrganization.name}
+                            initialTickets={activeOrganizationTickets}
+                        />
+                    ) : null
+                }
+            />
 
            <CardCompact className="w-full max-w-[420px] self-center" title="Create Ticket" description="A new ticket will be created" content={<TicketUpsertForm />} />
             <Suspense fallback={<Spinner/>}>

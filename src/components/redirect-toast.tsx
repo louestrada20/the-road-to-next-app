@@ -12,7 +12,11 @@ const RedirectToast = () => {
             const message = await getCookieByKey("toast");
 
             if (message) {
-                toast.success(message);
+                toast.success(
+                    <div 
+                    className="[&_a]:underline"
+                    dangerouslySetInnerHTML={{__html: message}} />
+                ); 
                 await deleteCookieByKey("toast");
             }
         }

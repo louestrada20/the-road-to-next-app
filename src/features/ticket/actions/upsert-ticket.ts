@@ -7,6 +7,7 @@ import {setCookieByKey} from "@/actions/cookies";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
+import {getTicketPermissions} from "@/features/ticket/permissions/get-ticket-permission";
 import {prisma} from "@/lib/prisma";
 import { ticketPath, ticketsPath} from "@/paths";
 import {toCent} from "@/utils/currency";
@@ -36,6 +37,16 @@ const {user, activeOrganization} = await getAuthOrRedirect();
 
             if (!ticket || !isOwner(user, ticket)) {
                 return toActionState("ERROR", "Not authorized");
+            }
+
+            // Check update permission
+            const permissions = await getTicketPermissions({
+                organizationId: ticket.organizationId,
+                userId: user.id
+            });
+
+            if (!permissions.canUpdateTicket) {
+                return toActionState("ERROR", "You do not have permission to update tickets");
             }
         }
 

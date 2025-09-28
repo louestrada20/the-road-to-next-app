@@ -1,5 +1,5 @@
 import {Suspense} from "react";
-import {OrganizationBreadCrumbs} from "@/app/(authenticated)/organization/[organizationId]/(admin)/_navigation/tabs";
+import {OrganizationBreadcrumbs} from "@/app/(authenticated)/organization/[organizationId]/(admin)/_navigation/tabs";
 import {Heading} from "@/components/heading";
 import {Spinner} from "@/components/spinner";
 import InvitationCreateButton from "@/features/invitation/components/invitation-create-button";
@@ -18,7 +18,7 @@ const InvitationsPage = async ({params}: InvitationsPageProps) => {
     return (
         <div className="flex-1 flex flex-col gap-y-8">
             <Heading title="Invitations" description="Manage your organizations invitations"
-                     tabs={<OrganizationBreadCrumbs />}
+                     tabs={<OrganizationBreadcrumbs />}
                      actions={<InvitationCreateButton organizationId={organizationId}  />}
             />
 

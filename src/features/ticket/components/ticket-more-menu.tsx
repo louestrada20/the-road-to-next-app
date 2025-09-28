@@ -29,7 +29,7 @@ const TicketMoreMenu = ({ticket, trigger}: TicketMoreMenuProps) => {
     const [deleteButton, deleteDialog ] = useConfirmDialog(
         {
             action: deleteTicket.bind(null, ticket.id),
-            trigger: ( <DropdownMenuItem disabled={!ticket.permissions.canDeleteTicket} className="cursor-pointer">
+            trigger: ( <DropdownMenuItem className="cursor-pointer">
                     <LucideTrash className=" h-4 w-4"/>
                     <span>Delete</span>
             </DropdownMenuItem>),
@@ -69,9 +69,9 @@ const TicketMoreMenu = ({ticket, trigger}: TicketMoreMenuProps) => {
             return deleteButton;
         }
 
-        // Create a non-disabled version of the delete button for the tooltip
+        // Create a disabled version of the delete button with tooltip
         const disabledDeleteButton = (
-            <DropdownMenuItem className="cursor-not-allowed opacity-50">
+            <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
                 <LucideTrash className="h-4 w-4"/>
                 <span>Delete</span>
             </DropdownMenuItem>

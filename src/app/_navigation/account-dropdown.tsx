@@ -1,4 +1,4 @@
-import { LucideLogOut, LucideUser} from "lucide-react";
+import { LucideGem, LucideLogOut, LucideUser} from "lucide-react";
 import Link from "next/link";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 import {
@@ -11,6 +11,7 @@ import {
 import {signOut} from "@/features/auth/actions/sign-out";
 import {AuthUser} from "@/features/auth/types";
 import {accountPasswordPath, accountProfilePath} from "@/paths";
+import {pricingPath} from "@/paths";
 
 type AccountDropdownProps = {
     user: AuthUser;
@@ -42,6 +43,14 @@ const AccountDropdown = ({user}: AccountDropdownProps) => {
                     <span>Password</span>
                 </Link>
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+                <Link href={pricingPath()}>
+                    <LucideGem className="mr-2 h-4 w-4" />
+                    <span>Pricing</span>
+                </Link>
+            </DropdownMenuItem>
+            
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                  <form action={signOut}>

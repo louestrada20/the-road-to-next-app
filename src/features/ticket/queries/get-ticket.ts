@@ -25,6 +25,7 @@ const permissions = await getTicketPermissions({
     userId: user?.id
 });
 return {...ticket, isOwner: isOwner(user, ticket), permissions: {
-    canDeleteTicket: isOwner(user, ticket) && !!permissions.canDeleteTicket
+    canDeleteTicket: isOwner(user, ticket) && !!permissions.canDeleteTicket,
+    canUpdateTicket: isOwner(user, ticket) && !!permissions.canUpdateTicket
     }};
 }

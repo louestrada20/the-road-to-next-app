@@ -1,7 +1,10 @@
 export const homePath = () => '/';
 
+export const pricingPath = () => '/pricing';
+
 export const ticketsPath = () => '/tickets';
 export const ticketsByOrganizationPath = () => '/tickets/organization';
+
 
 export const ticketPath = (ticketId: string) => `/tickets/${ticketId}`;
 export const ticketEditPath = (ticketId: string) => `/tickets/${ticketId}/edit`;
@@ -21,3 +24,10 @@ export const membershipsPath = (organizationId: string) => `/organization/${orga
 export const onboardingPath = () => "/onboarding";
 export const selectActiveOrganizationPath = () => "/onboarding/select-active-organization";
 export const invitationsPath = (organizationId: string) => `/organization/${organizationId}/invitations`;
+export const credentialsPath = (organizationId: string) => `/organization/${organizationId}/credentials`;
+export const subscriptionPath = (organizationId: string) => `/organization/${organizationId}/subscription`;
+export const emailChangeVerifyPath = () => "/account/email-change";
+
+export const attachmentDownloadPath = (attachmentId: string) => {
+    return `/api/aws/s3/attachments/${attachmentId}`
+}

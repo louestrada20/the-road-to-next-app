@@ -1,7 +1,7 @@
 "use client"
 
 import {LucidePlus} from "lucide-react";
-import {useActionState, useState} from "react";
+import {useActionState,useState} from "react";
 import {FieldError} from "@/components/form/field-error";
 import {Form} from "@/components/form/form";
 import {SubmitButton} from "@/components/form/submit-button";
@@ -26,10 +26,8 @@ type InvitationCreateButtonProps = {
 
 const InvitationCreateButton = ({organizationId}: InvitationCreateButtonProps) => {
     const [open, setOpen] = useState(false);
-
     const [actionState, action] = useActionState(createInvitation.bind(null, organizationId), EMPTY_ACTION_STATE);
-
-    const handleClose = () => setOpen(false);
+    const handleClose = () => {setOpen(false)};
 
     return (
         <Dialog open={open}  onOpenChange={setOpen}>
@@ -55,7 +53,7 @@ const InvitationCreateButton = ({organizationId}: InvitationCreateButtonProps) =
                                 <Label htmlFor="email" className="text-right">
                                     Email
                                 </Label>
-                                <Input name="email" id="email" placeholder="Email" className="col-span-3" />
+                                <Input name="email" id="email" placeholder="Email" className="col-span-3" required  />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4" >
                                 <div />

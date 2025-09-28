@@ -1,8 +1,7 @@
 import {format} from "date-fns";
-import {LucideTrash} from "lucide-react";
 import {Placeholder} from "@/components/placeholder";
-import {Button} from "@/components/ui/button";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {InvitationDeleteButton} from "@/features/invitation/components/invitation-delete-button";
 import {getInvitations} from "@/features/invitation/queries/get-invitations";
 
 
@@ -26,6 +25,7 @@ const InvitationList = async ({organizationId}: InvitationListProps) => {
                     <TableHead>Email</TableHead>
                     <TableHead>Invited At</TableHead>
                     <TableHead>Invited By</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead/>
                 </TableRow>
             </TableHeader>
@@ -33,9 +33,7 @@ const InvitationList = async ({organizationId}: InvitationListProps) => {
             <TableBody>
                 {invitations.map((invitation) => {
                   const deleteButton = (
-                      <Button variant="destructive" size="icon">
-                          <LucideTrash className="w-4 h-4" />
-                      </Button>
+                    <InvitationDeleteButton email={invitation.email} organizationId={invitation.organizationId} />
                   );
 
                     const buttons = <>{deleteButton}</>;
@@ -47,6 +45,7 @@ const InvitationList = async ({organizationId}: InvitationListProps) => {
                             <TableCell>
                                 {invitation.invitedByUser ? `${invitation.invitedByUser.username} (${invitation.invitedByUser.email})` : "Deleted User"}
                             </TableCell>
+                            <TableCell>{invitation.status}</TableCell>
                             <TableCell className="flex justify-end gap-x-2">
                                 {buttons}
                             </TableCell>

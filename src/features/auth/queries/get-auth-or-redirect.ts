@@ -10,7 +10,6 @@ type GetAuthOrRedirectOptions = {
 }
 
 export const getAuthOrRedirect = async (options?: GetAuthOrRedirectOptions) => {
-console.log('get auth or redirect call!')
     const {checkEmailVerified = true, checkOrganization = true, checkActiveOrganization = true} = options ?? {};
 
    const auth = await getAuth();

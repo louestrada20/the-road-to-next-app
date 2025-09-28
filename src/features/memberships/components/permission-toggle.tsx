@@ -10,7 +10,7 @@ import {togglePermission} from "@/features/memberships/actions/toggle-permission
 type PermissionToggleProps = {
     userId: string;
     organizationId: string;
-    permissionKey: "canDeleteTicket";
+    permissionKey: "canDeleteTicket" | "canUpdateTicket";
     permissionValue: boolean;
 }
 

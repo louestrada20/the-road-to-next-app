@@ -4,9 +4,9 @@ export const toCent = (amount: number) => new MyBig(amount).mul(100).round(2).to
 
 export const fromCent = (amount: number) => new MyBig(amount).div(100).round(2).toNumber();
 
-export const toCurrencyFromCent = (amount: number) => new Intl.NumberFormat('en-US', {
+export const toCurrencyFromCent = (amount: number, currency?: string) => new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
+        currency: currency ?? 'USD',
     }).format(fromCent(amount));
 
 

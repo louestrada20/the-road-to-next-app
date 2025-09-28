@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
@@ -16,19 +17,64 @@ model Organization {
   memberships   Membership[]
   tickets       Ticket[]
   invitations   Invitation[]
+  credentials   Credential[]
+  stripeCustomer StripeCustomer?
+  stripeCustomerId String?
+}
+
+model StripeCustomer {
+    organizationId String   @unique
+    organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    customerId   String   @unique
+    subscriptionId  String?
+    subscriptionStatus StripeSubscriptionStatus?
+    productId String?
+    priceId String?
+    eventAt            Int?
+}
+
+enum StripeSubscriptionStatus {
+  active
+  incomplete
+  incomplete_expired
+  past_due
+  canceled
+  unpaid
+  trialed
+  paused
+}
+
+model Credential {
+    id  String  @id @default(cuid())
+    createdAt   DateTime   @default(now())
+    secretHash  String  @unique
+    name   String
+    lastUsed   DateTime?
+    organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+    organizationId String
+    revokedAt DateTime?
+
+    @@index([organizationId])
 }
 
 model Invitation {
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  tokenHash       String           @unique
   email           String
-  tokenHash       String          @unique
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId  String
-  invitedByUser   User?           @relation(fields: [invitedByUserId], references: [id], onDelete: SetNull)
+  invitedByUser   User?            @relation(fields: [invitedByUserId], references: [id], onDelete: SetNull)
   invitedByUserId String?
+  status          InvitationStatus @default(PENDING)
 
+  @@id(name: "invitationId", [organizationId, email])
   @@index([organizationId])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED_WITHOUT_ACCOUNT
 }
 
 model Membership {
@@ -44,6 +90,7 @@ model Membership {
 
 
   canDeleteTicket  Boolean   @default(true)
+  canUpdateTicket  Boolean   @default(true)
   @@id(name: "membershipId", [organizationId, userId])
   @@index([organizationId])
   @@index([userId])
@@ -69,7 +116,19 @@ model User {
   comments            Comment[]
   tickets             Ticket[]
   invitesByUser       Invitation[]
+  emailChangeTokens   EmailChangeToken[]
+}
 
+model EmailChangeToken {
+  id         String      @id   @default(cuid())
+  code       String
+  newEmail   String
+  expiresAt  DateTime
+  userId     String
+  createdAt  DateTime    @default(now())
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([newEmail])
 }
 
 model EmailVerificationToken {
@@ -78,6 +137,7 @@ model EmailVerificationToken {
   email      String
   expiresAt  DateTime
   userId     String
+  createdAt  DateTime    @default(now())
   user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId])
 }
@@ -114,6 +174,9 @@ model Ticket {
   comments  Comment[]
   organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId   String
+  attachments   Attachment[]
+  referencedTickets Ticket[] @relation("TicketReferences")  
+  referencingTickets Ticket[] @relation("TicketReferences")
 
   @@index([userId])
 }
@@ -122,6 +185,28 @@ enum TicketStatus {
   OPEN
   IN_PROGRESS
   DONE
+}
+
+model Attachment {
+  id        String @id @default(cuid())
+  name      String
+  s3Key       String    @default("") // S3 object key for original file
+  thumbnailKey String?  // S3 object key for thumbnail
+  thumbnailUrl String?  // (legacy) keep for compatibility, will mirror thumbnailKey
+
+  entity    AttachmentEntity
+  ticket    Ticket?  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId  String?
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([commentId])
+}
+
+enum AttachmentEntity {
+  TICKET
+  COMMENT
 }
 
 model Comment {
@@ -133,7 +218,10 @@ model Comment {
   ticketId    String
   user        User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   ticket      Ticket     @relation(fields: [ticketId], references: [id], onDelete: Cascade )
+  attachments Attachment[]
 
   @@index([ticketId])
   @@index([userId])
 }
+
+

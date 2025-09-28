@@ -1,10 +1,12 @@
 
 import {Suspense} from "react";
-import {OrganizationBreadCrumbs} from "@/app/(authenticated)/organization/[organizationId]/(admin)/_navigation/tabs";
+import {OrganizationBreadcrumbs} from "@/app/(authenticated)/organization/[organizationId]/(admin)/_navigation/tabs";
 import {Heading} from "@/components/heading";
 import {Spinner} from "@/components/spinner";
 import InvitationCreateButton from "@/features/invitation/components/invitation-create-button";
 import {MembershipList} from "@/features/memberships/components/membership-list";
+import {OrganizationRenameButton} from "@/features/organization/components/organization-rename-button";
+import {prisma} from "@/lib/prisma";
 
 type MembershipsPageProps = {
     params: Promise <{
@@ -14,12 +16,27 @@ type MembershipsPageProps = {
 
 const MembershipsPage = async ({params}: MembershipsPageProps) => {
     const {organizationId} = await params;
+    
+    // Get organization for rename button
+    const organization = await prisma.organization.findUnique({
+        where: { id: organizationId }
+    });
+
+    if (!organization) {
+        throw new Error("Organization not found");
+    }
+
     return (
         <div className="flex flex-1 flex-col gap-y-8">
             <Heading title="Memberships"
                      description="Membership by organization"
-                     tabs={<OrganizationBreadCrumbs />}
-                     actions={<InvitationCreateButton organizationId={organizationId}  />}
+                     tabs={<OrganizationBreadcrumbs />}
+                     actions={
+                         <div className="flex gap-x-2">
+                             <OrganizationRenameButton organization={organization} />
+                             <InvitationCreateButton organizationId={organizationId} />
+                         </div>
+                     }
             />
             <Suspense fallback={<Spinner />} >
                 <MembershipList organizationId={organizationId} />

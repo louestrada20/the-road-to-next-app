@@ -5,6 +5,7 @@ import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
 import {prisma} from "@/lib/prisma";
 import {ticketPath} from "@/paths";
+import * as ticketService from "@/features/ticket/service";
 
 export const deleteComment = async (id: string) => {
     const {user} = await getAuthOrRedirect();
@@ -29,7 +30,7 @@ export const deleteComment = async (id: string) => {
         return fromErrorToActionState(error);
     }
 
-
+    await ticketService.disconnectReferencedTicketsViaComment(comment);
 
     revalidatePath(ticketPath(comment.ticketId));
     return toActionState("SUCCESS", "Comment deleted.");

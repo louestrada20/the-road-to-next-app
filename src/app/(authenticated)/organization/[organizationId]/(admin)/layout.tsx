@@ -1,15 +1,20 @@
-import {getAdminOrRedirect} from "@/features/memberships/queries/get-admin-or-redirect";
-
+import { getAdminOrRedirect } from "@/features/memberships/queries/get-admin-or-redirect"
+import { AdminBanner } from "@/components/admin-banner"
 
 export default async function AdminLayout({
     children,
     params,
-                                          }: Readonly<{
+}: Readonly<{
     children: React.ReactNode;
     params: Promise<{organizationId: string}>;
 }>){
-
     const {organizationId} = await params;
     await getAdminOrRedirect(organizationId);
-    return <>{children}</>
+    
+    return (
+        <div className="space-y-6">
+            <AdminBanner />
+            {children}
+        </div>
+    )
 }

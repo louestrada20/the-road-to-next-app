@@ -1,4 +1,5 @@
 "use client"
+import { useSearchParams } from "next/navigation";
 import {useActionState} from "react";
 import {FieldError} from "@/components/form/field-error";
 import {Form} from "@/components/form/form";
@@ -10,9 +11,11 @@ import {signUp} from "@/features/auth/actions/sign-up";
 
 const SignUpForm = () => {
     const [actionState, action] = useActionState(signUp, EMPTY_ACTION_STATE);
-
+    const searchParams = useSearchParams();
+    const token = searchParams.get("token");
 
     return <Form actionState={actionState} action={action}>
+        {token && <input type="hidden" name="token" value={token} />}
         <Label htmlFor="title">Username</Label>
         <Input name="username" placeholder="Username" defaultValue={actionState.payload?.get('username') as string} />
         <FieldError actionState={actionState} name="username" />

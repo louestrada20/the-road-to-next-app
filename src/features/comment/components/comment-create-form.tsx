@@ -9,7 +9,7 @@ import {Label} from "@/components/ui/label";
 import {Textarea} from "@/components/ui/textarea";
 import {createComment} from "@/features/comment/actions/create-comment";
 import {CommentWithMetadata} from "@/features/comment/types";
-
+import {ACCEPTED} from "@/features/attachments/constants";
 
 type CommentCreateFormProps = {
     ticketId: string;
@@ -22,6 +22,7 @@ const CommentCreateForm =  ({ ticketId, onCreateComment}: CommentCreateFormProps
         createComment.bind(null, ticketId),
         EMPTY_ACTION_STATE,
     );
+    // <Input  type="hidden" hidden defaultValue={ticketId} name="ticketId"/>  - we can use hidden input field to pass the ticketId to the server action as an alternative.
 
 
     const handleSuccess = (actionState: ActionState<CommentWithMetadata | undefined> ) => {
@@ -31,11 +32,19 @@ const CommentCreateForm =  ({ ticketId, onCreateComment}: CommentCreateFormProps
     return (
         <Form action={action} actionState={actionState} onSuccess={handleSuccess}>
 
-                <Input  type="hidden" hidden defaultValue={ticketId} name="ticketId"/>
             <Label htmlFor="content">Content</Label>
             <Textarea  id="content" name="content" placeholder="What's on your mind..." />
             <FieldError actionState={actionState} name="content" />
 
+            <Input 
+            name="files" 
+            type="file" 
+            multiple 
+            id="files" 
+            accept={ACCEPTED.join(",")}
+            />
+            <FieldError actionState={actionState} name="files" />
+            
             <SubmitButton label={"Comment"} />
 
 

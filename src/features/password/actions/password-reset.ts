@@ -5,8 +5,12 @@ import {setCookieByKey} from "@/actions/cookies";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {hashPassword} from "@/features/auth/password";
 import {prisma} from "@/lib/prisma";
-import {signInPath} from "@/paths";
+import {signInPath, ticketsPath} from "@/paths";
 import {hashToken} from "@/utils/crypto";
+import { getClientIp } from "@/lib/get-client-ip";      
+import { limitIp, limitEmail } from "@/lib/rate-limit";
+import { createSession, generateRandomSessionToken } from "@/features/auth/session";
+import { setSessionCookie } from "@/features/auth/cookie";
 
 const passwordResetSchema = z.object({
     password: z.string().min(6).max(191),
@@ -22,7 +26,17 @@ const passwordResetSchema = z.object({
 })
 
 export const passwordReset = async (tokenId: string, _actionState: ActionState, formData: FormData) => {
+    let sessionCreated = false;
+    let toastMessage = "";
     try {
+        const ip = await getClientIp();
+
+        // Coarse guard – 30 reset attempts per minute per IP
+        const resIp = await limitIp(ip, "password-reset", 30, "1 m");
+        if (!resIp.success) {
+            return toActionState("ERROR", "Too many password-reset attempts. Please wait and try again.", formData);
+        }
+
         const {password} = passwordResetSchema.parse({
             password: formData.get("password"),
             confirmPassword: formData.get("confirmPassword"),
@@ -33,6 +47,13 @@ export const passwordReset = async (tokenId: string, _actionState: ActionState, 
         where: {
             tokenHash
         },
+        include: {
+            user: {
+                select: {
+                    email: true
+                }
+            }
+        }
     })
 
         if (passwordResetToken) {
@@ -46,6 +67,14 @@ export const passwordReset = async (tokenId: string, _actionState: ActionState, 
 
         if (!passwordResetToken || Date.now() > passwordResetToken.expiresAt.getTime()) {
             return toActionState("ERROR", "Expired or invalid verification token", formData);
+        }
+
+        // Fine-grained guard – email + IP once we know the account
+        if (passwordResetToken.user) {
+            const resEmail = await limitEmail(ip, passwordResetToken.user.email, "password-reset");
+            if (!resEmail.success) {
+                return toActionState("ERROR", "Too many attempts for this account. Please try later.", formData);
+            }
         }
 
         await prisma.session.deleteMany({
@@ -64,11 +93,30 @@ export const passwordReset = async (tokenId: string, _actionState: ActionState, 
                 passwordHash
             }
         })
+        
+         // Try to create session
+         try {
+            const sessionToken = generateRandomSessionToken();
+            const session = await createSession(sessionToken, passwordResetToken.userId);
+            await setSessionCookie(sessionToken, session.expiresAt);
+            sessionCreated = true;
+            toastMessage = "Password reset successfully! You are now signed in.";
+        } catch (sessionError) {
+            sessionCreated = false;
+            toastMessage = "Password reset successful, but there was an issue signing you in. Please sign in manually.";
+        }
+
 
     } catch (error) {
         return fromErrorToActionState(error, formData)
     }
 
-    await setCookieByKey("toast", "Successfully Reset Password!")
-    redirect(signInPath());
+     // Set toast message and redirect - OUTSIDE the try-catch block
+     await setCookieByKey("toast", toastMessage);
+    
+     if (sessionCreated) {
+         redirect(ticketsPath()); // Redirect to tickets page (home)
+     } else {
+         redirect(signInPath()); // Redirect to sign-in page
+     }
 }

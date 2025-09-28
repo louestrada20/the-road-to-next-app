@@ -2,11 +2,13 @@
 import {notFound} from "next/navigation";
 import {Breadcrumbs} from "@/components/breadcrumbs";
 import {Separator} from "@/components/ui/separator";
-import {CommentList} from "@/features/comment/components/comment-list";
+import {Attachments} from "@/features/attachments/components/attachments";
+import {Comments} from "@/features/comment/components/comments/comments";   
 import {getComments} from "@/features/comment/queries/get-comments";
 import {TicketItem} from "@/features/ticket/components/ticket-item";
 import {getTicket} from "@/features/ticket/queries/get-ticket";
 import {homePath} from "@/paths";
+import {ReferencedTickets} from "@/features/ticket/components/referenced-tickets";
 
 type TicketPageProps = {
     params: Promise <{
@@ -38,8 +40,15 @@ const TicketPage = async ({params}: TicketPageProps) => {
             ]} />
             <Separator />
         <div className="flex animate-fade-in-from-top justify-center">
-           <TicketItem ticket={ticket} isDetail
-               comments={<CommentList ticketId={ticket.id} paginatedComments={paginatedComments} />}
+           <TicketItem ticket={ticket}
+                       isDetail
+                       attachments={
+                            <Attachments entityId={ticket.id} entity="TICKET" isOwner={ticket.isOwner} />
+                       }
+                       referencedTickets={<ReferencedTickets ticketId={ticket.id} />}
+                       comments={
+                            <Comments ticketId={ticket.id} paginatedComments={paginatedComments} />
+                       }
            />
         </div>
 
@@ -49,7 +58,7 @@ const TicketPage = async ({params}: TicketPageProps) => {
 }
 
 // commented them out because it makes more sense to just keep these dynamic as we WANT a highly dynamic app.
-// but keeping here to know how we generate static pages for dynamic [ticketId] pages (assuming we know all the id's beforehand and there is no too many).
+// but keeping here to know how we generate static pages for dynamic [ticketId] pages (assuming we know all the id's beforehand and there is not too many).
 
 // export async function generateStaticParams() {
 //     const tickets = await getTickets();

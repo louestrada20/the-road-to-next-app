@@ -25,7 +25,10 @@ export const getComments = async (ticketId: string, cursor?: string) => {
         prisma.comment.findMany({
             where,
             take: take + 1,
-            include: includeNames,
+            include: {
+                ...includeNames,
+                attachments: true,
+            },
             orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         }),
         prisma.comment.count({ where }),

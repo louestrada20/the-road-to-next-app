@@ -6,7 +6,9 @@ import {ActionState, fromErrorToActionState,} from "@/components/form/utils/to-a
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {prisma} from "@/lib/prisma";
 import {ticketsPath} from "@/paths";
-
+import { Organization } from "@prisma/client";
+import { membershipsPath } from "@/paths";
+import {inngest} from "@/lib/inngest";
 
 const createOrganizationSchema = z.object({
     name: z.string().min(1).max(191),
@@ -18,13 +20,16 @@ export const createOrganization = async (_actionState: ActionState, formData: Fo
         checkActiveOrganization: false,
     });
 
+
+    let organization: Organization;
+
     try {
         const data = createOrganizationSchema.parse({
             name: formData.get("name"),
         });
 
-        await prisma.$transaction(async (tx) => {
-            const organization =  await tx.organization.create({
+        organization = await prisma.$transaction(async (tx) => {
+            const org  =  await tx.organization.create({
                 data: {
                     ...data,
                     memberships: {
@@ -40,19 +45,31 @@ export const createOrganization = async (_actionState: ActionState, formData: Fo
                 where: {
                     userId: user.id,
                     organizationId: {
-                        not: organization.id,
+                        not: org.id,
                     }
                 },
                 data: {
                     isActive: false,
                 }
             })
+            return org;
         })
+
+
+        await inngest.send({
+            name: "app/organization.created",
+            data: {
+                organizationId: organization.id,
+                byEmail: user.email,
+            }
+        });
 
 
     } catch (error) {
         return fromErrorToActionState(error);
     }
-    await setCookieByKey("toast", "Organization created");
+    await setCookieByKey("toast",   
+         `<a href=${membershipsPath(organization.id)}>Organization </a> created`
+        );
     redirect(ticketsPath());
 }

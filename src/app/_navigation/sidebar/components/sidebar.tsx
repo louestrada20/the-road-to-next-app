@@ -6,14 +6,14 @@ import {SideBarItem} from "@/app/_navigation/sidebar/components/sidebar-item";
 import {navItems} from "@/app/_navigation/sidebar/constants";
 import {useAuth} from "@/features/auth/hooks/use-auth";
 import {cn} from "@/lib/utils";
-import {signInPath, signUpPath} from "@/paths";
+import {pricingPath, signInPath, signUpPath} from "@/paths";
 import {getActivePath} from "@/utils/get-active-path";
 
 const SideBar = () => {
     const pathName = usePathname();
     const {activeIndex} = getActivePath(pathName,
         navItems.map((item) => item.href),
-        [signInPath(), signUpPath()]
+        [signInPath(), signUpPath(), pricingPath()]
         );
 
 

@@ -6,7 +6,7 @@ import {getAdminOrRedirect} from "@/features/memberships/queries/get-admin-or-re
 import {prisma} from "@/lib/prisma";
 import {membershipsPath} from "@/paths";
 
-type PermissionKey = "canDeleteTicket";
+type PermissionKey = "canDeleteTicket" | "canUpdateTicket";
 
 type togglePermissionProps = {
     userId: string,

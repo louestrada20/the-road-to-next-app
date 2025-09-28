@@ -30,6 +30,7 @@ export const MembershipList = async ({organizationId}: MembershipListProps) => {
                     <TableHead>Verified Email</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Can Delete Ticket?</TableHead>
+                    <TableHead>Can Update Ticket?</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>{
@@ -73,6 +74,14 @@ export const MembershipList = async ({organizationId}: MembershipListProps) => {
                                 organizationId={membership.organizationId}
                                 permissionKey="canDeleteTicket"
                                 permissionValue={membership.canDeleteTicket}
+                                />
+                            </TableCell>
+                            <TableCell>
+                                <PermissionToggle 
+                                userId={membership.userId}
+                                organizationId={membership.organizationId}
+                                permissionKey="canUpdateTicket"
+                                permissionValue={membership.canUpdateTicket}
                                 />
                             </TableCell>
                             <TableCell className="flex justify-end gap-x-2">{buttons}</TableCell>

@@ -1,8 +1,12 @@
 import {EventSchemas, Inngest} from 'inngest';
+import {AttachmentDeletedEventArgs} from "@/features/attachments/events/event-attachment.deleted";
 import {EmailVerificationEventArgs} from "@/features/auth/events/event-email-verification";
 import {WelcomeEventArgs} from "@/features/auth/events/event-welcome";
-import {InvitationCreateEventArgs} from "@/features/invitation/events/email-invitation-created";
+import {InvitationCreateEventArgs} from "@/features/invitation/events/event-invitation-created";
+import {OrganizationDeletedEventArgs} from "@/features/organization/events/event-organization.deleted";
 import {PasswordResetEventArgs} from "@/features/password/events/event-password-reset";
+import { OrganizationCreateEventArgs } from '@/features/organization/events/event-organization.created';
+import {EmailChangeEventArgs} from "@/features/account/events/event-email-change";  
 
 type Events = {
     "app/password.password-reset": PasswordResetEventArgs;
@@ -10,6 +14,11 @@ type Events = {
     "app/auth.sign-up": EmailVerificationEventArgs;
     "app/auth.email-verification": EmailVerificationEventArgs;
     "app/invitation.created": InvitationCreateEventArgs;
+    "app/attachment.deleted": AttachmentDeletedEventArgs;
+    // thumbnail-generated event removed – handled by Lambda
+    "app/organization.deleted": OrganizationDeletedEventArgs;
+    "app/organization.created": OrganizationCreateEventArgs;
+    "app/account.email-change": EmailChangeEventArgs;       
 };
 export const inngest = new Inngest({
     id: "the-road-to-next-pro",

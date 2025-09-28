@@ -10,6 +10,7 @@ export const getTicketPermissions = async ({organizationId, userId}: GetTicketPe
 if (!organizationId || !userId) {
     return {
         canDeleteTicket: false,
+        canUpdateTicket: false,
     };
 }
 
@@ -25,12 +26,14 @@ const membership = await prisma.membership.findUnique({
 if (!membership) {
     return {
         canDeleteTicket: false,
+        canUpdateTicket: false,
     }
 }
 
 
 return {
     canDeleteTicket: membership.canDeleteTicket,
+    canUpdateTicket: membership.canUpdateTicket,
 };
 
 }

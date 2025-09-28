@@ -42,7 +42,7 @@ export const fromErrorToActionState = (error: unknown, formData?: FormData): Act
         // return generic error message.
         return {
             status: "ERROR",
-            message: "An unknown error occured",
+            message: "An unknown error occurred",
             fieldErrors: {},
             payload: formData,
             timestamp: Date.now(),

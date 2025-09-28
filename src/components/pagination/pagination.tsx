@@ -1,6 +1,8 @@
 import {Button} from "@/components/ui/button";
+import {PAGE_SIZES} from "@/components/pagination/constants";   
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {PaginatedData} from "@/types/pagination";
+import { useTransition } from "react";  
 
 type PageAndSize = {
     page: number;
@@ -20,21 +22,27 @@ const Pagination = ({pagination, onPagination, paginatedMetadata: {count, hasNex
 
     const label = `${actualStartOffset} - ${actualEndOffset} of ${count}`;
 
+    const [isPending, startTransition] = useTransition();
+
     const handleNextPage = () => {
-        onPagination({...pagination, page: pagination.page + 1})
+        startTransition(() => {
+            onPagination({...pagination, page: pagination.page + 1})    
+        })
     }
     const handlePreviousPage = () => {
-        onPagination({...pagination, page: pagination.page - 1})
+        startTransition(() => {
+            onPagination({...pagination, page: pagination.page - 1})
+        })
     }
     const previousButton = (
-        <Button variant="outline" size="sm" disabled={pagination.page < 1} onClick={handlePreviousPage}>
+        <Button variant="outline" size="sm" disabled={pagination.page < 1 || isPending} onClick={handlePreviousPage}>
             Previous
         </Button>
     )
 
     const nextButton = (
         <Button variant="outline" size="sm"
-               disabled={!hasNextPage}
+               disabled={!hasNextPage || isPending}
                 onClick={handleNextPage}>
             Next
         </Button>
@@ -50,11 +58,9 @@ const Pagination = ({pagination, onPagination, paginatedMetadata: {count, hasNex
                 <SelectValue />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="25">25</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-                <SelectItem value="100">100</SelectItem>
+                {PAGE_SIZES.map((size) => (
+                    <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
+                ))}
             </SelectContent>
         </Select>
     )

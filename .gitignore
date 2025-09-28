@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Development files
+notes.txt
+trust.json
+.cursorrules
+.vscode/
+
+# Lambda build artifacts (AWS deployment)
+lambda-build/

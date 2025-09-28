@@ -1,13 +1,16 @@
 
 import {format} from "date-fns"
 import {Card} from "@/components/ui/card";
+import {Separator} from "@/components/ui/separator";
 import {CommentWithMetadata} from "@/features/comment/types";
+import Content from "@/components/content";
 
 type CommentItemProps = {
     comment: CommentWithMetadata,
-    buttons: React.ReactNode[]
+    buttons: React.ReactNode[],
+    sections: {label: string, content: React.ReactNode}[]
 }
-const CommentItem = ({comment, buttons}: CommentItemProps) => {
+const CommentItem = ({comment, buttons, sections}: CommentItemProps) => {
     const {content} = comment;
     return (
         <div className="flex gap-x-2">
@@ -20,9 +23,16 @@ const CommentItem = ({comment, buttons}: CommentItemProps) => {
                         {format(comment.createdAt, "yyyy-MM-dd, HH:mm")}
                     </p>
             </div>
-            <p className="whitespace-pre-line">
+            <Content>
                 {content}
-            </p>
+            </Content>
+            {sections.map((section) => (
+                <div key={section.label} className="space-y-2 mt-2">
+                    <Separator />
+                    <h4 className="text-sm text-muted-foreground">{section.label}</h4>
+                   <div> {section.content}</div>
+                </div>
+            ))}
         </Card>
             <div className="flex flex-col gap-y-1">
                 {buttons}
