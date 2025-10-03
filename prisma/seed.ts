@@ -3,6 +3,8 @@ import {hashPassword} from "@/features/auth/password";
 import {createDefaultAttachments} from "@/features/attachments/utils/create-default-attachments";
 import {ListObjectsV2Command, DeleteObjectsCommand} from "@aws-sdk/client-s3";
 import {s3} from "@/lib/aws";
+import {findTicketIdsFromText} from "@/utils/find-ids-from-text";
+import * as ticketData from "@/features/ticket/data";
 
 const prisma = new PrismaClient();
 
@@ -51,7 +53,7 @@ const comments = [
     [
         { content: "First comment on ticket 1" },
         { content: "Second comment on ticket 1" },
-        { content: "Third comment on ticket 1" },
+        { content: "This ticket is related to /tickets/TICKET_2_ID and /tickets/TICKET_3_ID" }, // Will reference tickets 2 & 3
         { content: "Fourth comment on ticket 1" },
         { content: "Fifth comment on ticket 1" },
         { content: "Sixth comment on ticket 1" },
@@ -61,10 +63,10 @@ const comments = [
         { content: "Tenth comment on ticket 1" },
     ],
     [
-        { content: "Single comment for ticket 2" }
+        { content: "Single comment for ticket 2 - no references to other tickets" }
     ],
     [
-        { content: "Single comment for ticket 3" }
+        { content: "This ticket 3 is related to /tickets/TICKET_1_ID" } // Will reference ticket 1
     ]
 ];
 
@@ -172,17 +174,54 @@ const seed = async () => {
         }))
     });
 
-    await prisma.comment.createMany({
-        data: comments.flatMap((commentGroup, ticketIndex) =>
-            commentGroup.map((comment) => ({
-                ...comment,
+    // Create comments with proper ticket ID references for automatic ticket linking
+    const commentsWithReferences = comments.map((commentGroup, ticketIndex) => 
+        commentGroup.map((comment) => {
+            let content = comment.content;
+            // Replace placeholder IDs with actual ticket IDs
+            content = content.replace('TICKET_1_ID', dbTickets[0].id);
+            content = content.replace('TICKET_2_ID', dbTickets[1].id);
+            content = content.replace('TICKET_3_ID', dbTickets[2].id);
+            
+            return {
+                content,
                 userId: dbUsers[0].id,
                 ticketId: dbTickets[ticketIndex].id,
-            }))
-        )
+            };
+        })
+    );
+
+    await prisma.comment.createMany({
+        data: commentsWithReferences.flat()
     });
 
 
+
+    // Process comments to create ticket references automatically
+    console.log('Processing comments for ticket references...');
+    
+    const createdComments = await prisma.comment.findMany({
+        orderBy: { createdAt: 'asc' }
+    });
+    
+    // Process each comment for ticket references using existing utility functions
+    for (const comment of createdComments) {
+        const rawIds = findTicketIdsFromText("tickets", comment.content);
+        if (!rawIds.length) continue;
+
+        const uniqueIds = Array.from(new Set(rawIds)).filter((id) => id !== comment.ticketId);
+        if (!uniqueIds.length) continue;
+
+        const existingIds = await ticketData.findExistingTicketIds(uniqueIds);
+        if (!existingIds.length) continue;
+
+        await ticketData.connectReferencedTickets(comment.ticketId, existingIds);
+    }
+    
+    console.log('✓ Ticket references created through comment processing:');
+    console.log('  - Ticket 1 → references Tickets 2, 3 (tabs: both referenced & referencing)');
+    console.log('  - Ticket 2 → no references (single card: referencing only)');
+    console.log('  - Ticket 3 → references Ticket 1 (tabs: both referenced & referencing)');
 
     // Clean up any orphaned attachments (those without valid S3 keys)
     console.log('Cleaning up orphaned attachments...');

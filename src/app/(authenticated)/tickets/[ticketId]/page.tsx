@@ -5,8 +5,8 @@ import {Separator} from "@/components/ui/separator";
 import {Attachments} from "@/features/attachments/components/attachments";
 import {Comments} from "@/features/comment/components/comments/comments";   
 import {getComments} from "@/features/comment/queries/get-comments";
-import {ReferencedTickets} from "@/features/ticket/components/referenced-tickets";
 import {TicketItem} from "@/features/ticket/components/ticket-item";
+import {TicketReferences} from "@/features/ticket/components/ticket-references";
 import {getTicket} from "@/features/ticket/queries/get-ticket";
 import {homePath} from "@/paths";
 
@@ -15,7 +15,6 @@ type TicketPageProps = {
         ticketId: string;
     }>
 };
-
 const TicketPage = async ({params}: TicketPageProps) => {
     const { ticketId } = await params;
     const results = await Promise.allSettled([
@@ -45,7 +44,7 @@ const TicketPage = async ({params}: TicketPageProps) => {
                        attachments={
                             <Attachments entityId={ticket.id} entity="TICKET" isOwner={ticket.isOwner} />
                        }
-                       referencedTickets={<ReferencedTickets ticketId={ticket.id} />}
+                       referencedTickets={<TicketReferences ticketId={ticket.id} />}
                        comments={
                             <Comments ticketId={ticket.id} paginatedComments={paginatedComments} />
                        }
