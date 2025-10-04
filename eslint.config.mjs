@@ -30,6 +30,18 @@ const eslintConfig = [
       ecmaVersion: "latest",
     },
   },
+  // Test-specific rules
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx", "src/test/**/*.ts", "src/test/**/*.tsx", "e2e/**/*.spec.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off", // Allow any in test files
+      "simple-import-sort/imports": "error",
+      "@typescript-eslint/no-unused-vars": ["error", { 
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }]
+    }
+  }
 ];
 
 export default eslintConfig;
