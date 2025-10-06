@@ -7,7 +7,7 @@ import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
-import { deleteFile } from "@/lib/storage";
+import {  deleteFileByBlobUrl } from "@/lib/storage";
 import * as attachmentData from "../data";
 import * as attachmentSubjectDTO from "../dto/attachment-subject-dto";
 import { getAttachmentPath } from "../utils/attachment-helper";
@@ -36,8 +36,11 @@ export const deleteAttachment = async (id: string) => {
     }
 
     try {
-        // Delete file from storage using new abstraction
-        await deleteFile(attachment.id, attachment.name);
+        // Delete blob only when a blob URL exists.
+        // For legacy S3 objects, skip remote deletion (no longer supported) and just remove DB record.
+        if (attachment.blobUrl) {
+            await deleteFileByBlobUrl(attachment.blobUrl);
+        }
 
         // Delete database record
         await prisma.attachment.delete({
@@ -57,6 +60,7 @@ export const deleteAttachment = async (id: string) => {
                 fileName: attachment.name,
                 attachmentId: attachment.id,
                 thumbnailUrl: attachment.thumbnailUrl || undefined,
+                blobUrl: attachment.blobUrl || undefined,
             }
         })
 

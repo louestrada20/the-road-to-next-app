@@ -39,9 +39,8 @@ export const createAttachments = async ({files, entity, entityId}: CreateAttachm
             // Update attachment with file metadata
             await attachmentData.updateAttachment({
                 id: attachment.id,
-                s3Key: fileMetadata.s3Key,
-                thumbnailKey: fileMetadata.thumbnailKey,
-                thumbnailUrl: fileMetadata.thumbnailKey,
+                blobUrl: fileMetadata.blobUrl,
+                blobPath: fileMetadata.blobPath,
             });
 
             // (Thumbnail event removed – Lambda will pick up S3 upload and create thumbnail automatically)

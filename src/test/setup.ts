@@ -100,6 +100,17 @@ vi.mock('@/lib/prisma', () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    attachment: {
+      findUnique: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
+      create: vi.fn(),
+      createManyAndReturn: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
     stripeCustomer: {
       findUnique: vi.fn(),
       findUniqueOrThrow: vi.fn(),
@@ -150,14 +161,15 @@ vi.mock('@/lib/resend', () => ({
   },
 }))
 
-// Mock AWS S3
-vi.mock('@aws-sdk/client-s3', () => ({
-  S3Client: vi.fn(() => ({
-    send: vi.fn(),
-  })),
-  PutObjectCommand: vi.fn(),
-  DeleteObjectCommand: vi.fn(),
-  GetObjectCommand: vi.fn(),
+// Import Vercel Blob mocks
+import './mocks/vercel-blob'
+
+// Mock Inngest
+vi.mock('@/lib/inngest', () => ({
+  inngest: {
+    send: vi.fn(() => Promise.resolve({ ids: ['test-id'] })),
+    createFunction: vi.fn(),
+  },
 }))
 
 // Mock environment variables

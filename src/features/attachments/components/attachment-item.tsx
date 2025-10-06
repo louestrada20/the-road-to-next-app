@@ -23,7 +23,7 @@ const AttachmentItem = ({ attachment, buttons }: AttachmentItemProps) => {
                 )}
                 <a
                     className="flex gap-x-2 items-center text-sm truncate flex-1 min-w-0"
-                    href={attachmentDownloadPath(attachment.id)}
+                    href={attachment.blobUrl || attachmentDownloadPath(attachment.id)}
                     download
                     target="_blank"
                     rel="noopener noreferrer"
