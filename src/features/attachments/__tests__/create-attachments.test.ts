@@ -71,12 +71,12 @@ describe('createAttachments', () => {
       formData
     );
 
-    // Check that attachment was created
+    // Check that attachment was created (ticketId is used for TICKET entity)
     expect(prisma.attachment.create).toHaveBeenCalledWith({
       data: {
         name: 'test.jpg',
         entity: 'TICKET',
-        entityId: 'ticket123'
+        ticketId: 'ticket123'
       }
     });
 

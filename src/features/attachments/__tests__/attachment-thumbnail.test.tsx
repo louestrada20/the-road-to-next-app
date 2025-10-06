@@ -1,11 +1,11 @@
 import { Attachment } from '@prisma/client';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { AttachmentThumbnail } from '../components/attachment-thumbnail';
 
 // Mock Next.js Image component
 vi.mock('next/image', () => ({
-  default: ({ src, alt, onError, ...props }: any) => {
+  default: ({ src, alt, onError, blurDataURL: _blurDataURL, placeholder: _placeholder, ...props }: any) => {
     // eslint-disable-next-line @next/next/no-img-element
     return <img src={src} alt={alt} onError={onError} {...props} />;
   },
@@ -55,15 +55,17 @@ describe('AttachmentThumbnail', () => {
     expect(img.getAttribute('src')).toContain('/api/aws/s3/attachments/');
   });
 
-  it('should show error state on image load failure', () => {
+  it('should show error state on image load failure', async () => {
     render(<AttachmentThumbnail attachment={mockAttachment} />);
-    
+
     const img = screen.getByRole('img', { name: 'test-image.jpg' });
-    
+
     // Simulate image load error
-    img.dispatchEvent(new Event('error'));
-    
-    expect(screen.getByText('Image unavailable')).toBeInTheDocument();
+    fireEvent.error(img);
+
+    await waitFor(() => {
+      expect(screen.getByText('Image unavailable')).toBeInTheDocument();
+    });
   });
 
   it('should apply custom className', () => {

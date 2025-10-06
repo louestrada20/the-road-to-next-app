@@ -36,12 +36,10 @@ export const deleteAttachment = async (id: string) => {
     }
 
     try {
-        // Delete file from storage - prefer blob URL if available
+        // Delete blob only when a blob URL exists.
+        // For legacy S3 objects, skip remote deletion (no longer supported) and just remove DB record.
         if (attachment.blobUrl) {
             await deleteFileByBlobUrl(attachment.blobUrl);
-        } else if (attachment.s3Key) {
-            // Fallback for old attachments
-            await deleteFile(attachment.id, attachment.name);
         }
 
         // Delete database record
