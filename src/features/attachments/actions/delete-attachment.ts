@@ -7,7 +7,7 @@ import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
-import { deleteFile, deleteFileByBlobUrl } from "@/lib/storage";
+import {  deleteFileByBlobUrl } from "@/lib/storage";
 import * as attachmentData from "../data";
 import * as attachmentSubjectDTO from "../dto/attachment-subject-dto";
 import { getAttachmentPath } from "../utils/attachment-helper";
