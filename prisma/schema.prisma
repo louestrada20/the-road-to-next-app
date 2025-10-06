@@ -193,6 +193,8 @@ model Attachment {
   s3Key       String    @default("") // S3 object key for original file
   thumbnailKey String?  // S3 object key for thumbnail
   thumbnailUrl String?  // (legacy) keep for compatibility, will mirror thumbnailKey
+  blobUrl      String?  // Vercel Blob URL for original file
+  blobPath     String?  // Vercel Blob path (for deletion)
 
   entity    AttachmentEntity
   ticket    Ticket?  @relation(fields: [ticketId], references: [id], onDelete: Cascade)

@@ -1,5 +1,5 @@
-import { deleteFileFromS3, getS3FileUrl,uploadFileToS3 } from "./s3-storage";
 import { FileMetadata, UploadOptions } from "./types";
+import { deleteFileByUrl,deleteFileFromBlob, uploadFileToBlob } from "./vercel-blob-storage";
 
 // Default configuration
 const DEFAULT_CONFIG = {
@@ -54,7 +54,7 @@ export const uploadFile = async (
    const uploadOptions = mergeUploadOptions(options);
  
    // Upload file using provided attachment id as fileId
-   return uploadFileToS3(file, uploadOptions, options.fileId);
+   return uploadFileToBlob(file, uploadOptions, options.fileId);
  }
 
 export const uploadFiles = async (
@@ -71,15 +71,22 @@ export const uploadFiles = async (
  }
 
 export const deleteFile = async (fileId: string, fileName: string): Promise<void> => {
-  return deleteFileFromS3(fileId, fileName);
+  return deleteFileFromBlob(fileId, fileName);
 };
 
+export const deleteFileByBlobUrl = async (blobUrl: string): Promise<void> => {
+  return deleteFileByUrl(blobUrl);
+};
+
+// Note: With Vercel Blob, URLs are public and permanent, so this function is not needed
+// Keeping for backward compatibility during migration
 export const getFileUrl = async (
-  fileId: string, 
-  fileName: string, 
-  options?: { thumbnail?: boolean }
+  _fileId: string, 
+  _fileName: string, 
+  _options?: { thumbnail?: boolean }
 ): Promise<string> => {
-  return getS3FileUrl(fileId, fileName, options);
+  // Return a placeholder URL - actual URLs will come from blob storage
+  throw new Error('getFileUrl is deprecated with Vercel Blob. Use the blobUrl directly from the attachment record.');
 };
 
 // (generateThumbnail removed – Lambda handles thumbnails)

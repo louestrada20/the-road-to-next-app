@@ -24,6 +24,10 @@ const eslintConfig = [
         }
       ],
       "simple-import-sort/exports": "error",
+      "@typescript-eslint/no-unused-vars": ["error", { 
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }]
     },
     languageOptions: {
       sourceType: "module",

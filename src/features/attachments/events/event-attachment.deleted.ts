@@ -1,6 +1,6 @@
 import { AttachmentEntity } from "@prisma/client";
 import { inngest } from "@/lib/inngest";
-import { deleteFile } from "@/lib/storage";
+import { deleteFileByBlobUrl } from "@/lib/storage";
 
 export type AttachmentDeletedEventArgs = {
     data: {
@@ -10,6 +10,7 @@ export type AttachmentDeletedEventArgs = {
         entity: AttachmentEntity;
         fileName: string;
         thumbnailUrl?: string;
+        blobUrl?: string;
     }
 }
 
@@ -17,14 +18,14 @@ export const attachmentDeletedEvent = inngest.createFunction(
 {id: "attachment-deleted"},
 {event: "app/attachment.deleted"},
     async ({event}) => {
-    const { attachmentId, fileName } = event.data;
+    const { blobUrl } = event.data;
     try {
-        // Delete original file using new abstraction
-        await deleteFile(attachmentId, fileName);
-
-        // Note: The deleteFile function should handle both original and thumbnail deletion
-        // If you need separate handling, you can add a specific function for thumbnail deletion
-
+        // Delete file using blob URL if available
+        if (blobUrl) {
+            await deleteFileByBlobUrl(blobUrl);
+        }
+        // Note: With Vercel Blob, we only need to delete the original file
+        // Next.js Image handles thumbnail generation on-the-fly
     }
     catch (error) {
         console.log(error);

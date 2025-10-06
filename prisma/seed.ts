@@ -1,8 +1,7 @@
 import {PrismaClient} from "@prisma/client";
 import {hashPassword} from "@/features/auth/password";
 import {createDefaultAttachments} from "@/features/attachments/utils/create-default-attachments";
-import {ListObjectsV2Command, DeleteObjectsCommand} from "@aws-sdk/client-s3";
-import {s3} from "@/lib/aws";
+import {list, del} from "@vercel/blob";
 import {findTicketIdsFromText} from "@/utils/find-ids-from-text";
 import * as ticketData from "@/features/ticket/data";
 
@@ -79,48 +78,28 @@ const seed = async () => {
     }
     const passwordHash = await hashPassword(process.env.ADMIN_PASSWORD);
 
-    // Clean up all attachment uploads (originals and thumbnails)
-    console.log('Cleaning up S3 attachment uploads...');
+    // Clean up all Vercel Blob attachments
+    console.log('Cleaning up Vercel Blob attachments...');
     try {
-        const objectsToDelete: { Key: string }[] = [];
-        let continuationToken: string | undefined;
+        const response = await list({
+            prefix: 'attachments/',
+        });
         
-        do {
-            const listResponse = await s3.send(new ListObjectsV2Command({
-                Bucket: process.env.AWS_BUCKET_NAME,
-                Prefix: 'uploads/',
-                ContinuationToken: continuationToken,
-            }));
-
-            if (listResponse.Contents) {
-                objectsToDelete.push(...listResponse.Contents.map(obj => ({ Key: obj.Key! })));
-            }
-
-            continuationToken = listResponse.NextContinuationToken;
-        } while (continuationToken);
-
-        if (objectsToDelete.length > 0) {
-            console.log(`Found ${objectsToDelete.length} attachment files to delete`);
+        if (response.blobs.length > 0) {
+            console.log(`Found ${response.blobs.length} blob files to delete`);
             
-            // Delete objects in batches of 1000 (S3 limit)
-            const batchSize = 1000;
-            for (let i = 0; i < objectsToDelete.length; i += batchSize) {
-                const batch = objectsToDelete.slice(i, i + batchSize);
-                
-                if (batch.length > 0) {
-                    await s3.send(new DeleteObjectsCommand({
-                        Bucket: process.env.AWS_BUCKET_NAME,
-                        Delete: {
-                            Objects: batch,
-                            Quiet: false
-                        }
-                    }));
+            // Delete all blobs
+            for (const blob of response.blobs) {
+                try {
+                    await del(blob.url);
+                } catch (error) {
+                    console.error(`Failed to delete blob ${blob.pathname}:`, error);
                 }
             }
-            console.log(`Cleaned up ${objectsToDelete.length} attachment files (including thumbnails)`);
+            console.log(`Cleaned up ${response.blobs.length} blob files`);
         }
     } catch (error) {
-        console.error('Failed to clean up S3 attachment uploads:', error);
+        console.error('Failed to clean up Vercel Blob attachments:', error);
         console.log('Continuing with database seed...');
     }
 

@@ -3,10 +3,12 @@ export interface FileMetadata {
   name: string;
   size: number;
   mimeType: string;
-  s3Key: string;          // S3 object key for original file
-  thumbnailKey?: string;  // S3 object key for thumbnail
-  url?: string;           // (legacy) still exposed as s3Key for compatibility
+  s3Key?: string;         // S3 object key for original file (keep for migration)
+  thumbnailKey?: string;  // S3 object key for thumbnail (keep for migration)
+  url: string;            // Public URL for the file
   thumbnailUrl?: string;  // (legacy)
+  blobUrl?: string;       // Vercel Blob URL
+  blobPath?: string;      // Vercel Blob path for deletion
   uploadedAt: Date;
 }
 

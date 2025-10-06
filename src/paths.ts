@@ -29,5 +29,6 @@ export const subscriptionPath = (organizationId: string) => `/organization/${org
 export const emailChangeVerifyPath = () => "/account/email-change";
 
 export const attachmentDownloadPath = (attachmentId: string) => {
-    return `/api/aws/s3/attachments/${attachmentId}`
+    // Legacy path - attachments now use direct blob URLs
+    return `/api/attachments/${attachmentId}/download`
 }

@@ -15,7 +15,7 @@ type Events = {
     "app/auth.email-verification": EmailVerificationEventArgs;
     "app/invitation.created": InvitationCreateEventArgs;
     "app/attachment.deleted": AttachmentDeletedEventArgs;
-    // thumbnail-generated event removed – handled by Lambda
+    // thumbnail generation now handled by Next.js Image component
     "app/organization.deleted": OrganizationDeletedEventArgs;
     "app/organization.created": OrganizationCreateEventArgs;
     "app/account.email-change": EmailChangeEventArgs;       

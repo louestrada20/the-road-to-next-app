@@ -1,7 +1,6 @@
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { put } from "@vercel/blob";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { s3 } from "@/lib/aws";
 import { prisma } from "@/lib/prisma";
 
 const DEFAULT_ATTACHMENTS = [
@@ -15,8 +14,8 @@ const DEFAULT_ATTACHMENTS = [
     },
 ];
 
-// uploads/<attachmentId>/<fileName>
-const buildKey = (attachmentId: string, fileName: string) => `uploads/${attachmentId}/${fileName}`;
+// attachments/<attachmentId>/<fileName>
+const buildBlobPath = (attachmentId: string, fileName: string) => `attachments/${attachmentId}/${fileName}`;
 
 export const createDefaultAttachments = async (ticketId: string) => {
     const attachments = [];
@@ -27,42 +26,44 @@ export const createDefaultAttachments = async (ticketId: string) => {
             const filePath = join(process.cwd(), "public", "default-attachments", attachmentInfo.name);
             const fileBuffer = readFileSync(filePath);
 
-            // Create attachment row first (temporary s3Key="")
+            // Create attachment row first
             const attachment = await prisma.attachment.create({
                 data: {
                     name: attachmentInfo.name,
                     ticketId,
                     entity: "TICKET",
-                    s3Key: "", // placeholder, will update after upload
+                    blobUrl: "", // placeholder, will update after upload
+                    blobPath: "", // placeholder, will update after upload
                 }
             });
 
-            const key = buildKey(attachment.id, attachmentInfo.name);
+            const blobPath = buildBlobPath(attachment.id, attachmentInfo.name);
 
             try {
-                // Upload original file
-                await s3.send(new PutObjectCommand({
-                    Bucket: process.env.AWS_BUCKET_NAME,
-                    Key: key,
-                    Body: fileBuffer,
-                    ContentType: attachmentInfo.mimeType
-                }));
-
-                // Persist s3Key only if upload succeeded
-                await prisma.attachment.update({
-                    where: { id: attachment.id },
-                    data: { s3Key: key }
+                // Upload to Vercel Blob
+                const blob = await put(blobPath, fileBuffer, {
+                    access: 'public',
+                    addRandomSuffix: false,
+                    contentType: attachmentInfo.mimeType,
                 });
 
-                // Lambda will detect upload and generate thumbnail automatically, no Inngest event needed.
+                // Update attachment with blob URL and path
+                await prisma.attachment.update({
+                    where: { id: attachment.id },
+                    data: { 
+                        blobUrl: blob.url,
+                        blobPath: blobPath
+                    }
+                });
+
                 attachments.push(attachment);
-                console.log(`Created default attachment: ${attachmentInfo.name}`);
-            } catch (s3Error) {
-                // If S3 upload fails, clean up the database record
+                console.log(`Created default attachment: ${attachmentInfo.name} at ${blob.url}`);
+            } catch (blobError) {
+                // If Blob upload fails, clean up the database record
                 await prisma.attachment.delete({
                     where: { id: attachment.id }
                 });
-                console.warn(`Skipped default attachment ${attachmentInfo.name} - S3 upload failed:`, s3Error instanceof Error ? s3Error.message : s3Error);
+                console.warn(`Skipped default attachment ${attachmentInfo.name} - Blob upload failed:`, blobError instanceof Error ? blobError.message : blobError);
             }
         } catch (error) {
             console.error(`Error creating default attachment ${attachmentInfo.name}:`, error);
