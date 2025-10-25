@@ -2,6 +2,7 @@
 import { LucideSquareKanban} from "lucide-react";
 import Link from "next/link";
 import {AccountDropdown} from "@/app/_navigation/account-dropdown";
+import {MobileAuthDropdown} from "@/components/mobile-auth-dropdown";
 import {ThemeSwitcher} from "@/components/theme/theme-switcher";
 import {buttonVariants} from "@/components/ui/button";
 import {useAuth} from "@/features/auth/hooks/use-auth";
@@ -19,14 +20,20 @@ const {user, isFetched} = useAuth();
         <AccountDropdown user={user} />
     ) : (
         <>
-            <Link href={signUpPath()} className={buttonVariants({variant: "outline", size: "sm"})}>
-                <span className="hidden xs:inline">Sign Up</span>
-                <span className="xs:hidden">Up</span>
-            </Link>
-            <Link href={signInPath()} className={buttonVariants({variant: "default", size: "sm"})}>
-                <span className="hidden xs:inline">Sign In</span>
-                <span className="xs:hidden">In</span>
-            </Link>
+            {/* Mobile: Dropdown menu */}
+            <div className="sm:hidden">
+                <MobileAuthDropdown />
+            </div>
+            
+            {/* Desktop: Individual buttons */}
+            <div className="hidden sm:flex gap-x-2">
+                <Link href={signUpPath()} className={buttonVariants({variant: "outline", size: "sm"})}>
+                    Sign Up
+                </Link>
+                <Link href={signInPath()} className={buttonVariants({variant: "default", size: "sm"})}>
+                    Sign In
+                </Link>
+            </div>
         </>
     );
 
@@ -40,8 +47,8 @@ const {user, isFetched} = useAuth();
                     <Link href={homePath()} className={buttonVariants({variant: "ghost", size: "sm"})}>
                         <LucideSquareKanban className="h-5 w-5"/>
                         <h1 className="text-base sm:text-lg font-semibold">
-                            <span className="hidden xs:inline">TicketBounty</span>
-                            <span className="xs:hidden">TB</span>
+                            <span className="hidden sm:inline">TicketBounty</span>
+                            <span className="sm:hidden">TB</span>
                         </h1>
                     </Link>
                 </div>
