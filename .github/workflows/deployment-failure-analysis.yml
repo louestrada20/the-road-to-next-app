@@ -1,0 +1,274 @@
+name: Deployment Failure Analysis
+on:
+  repository_dispatch:
+    types: [deployment-failed]
+
+jobs:
+  analyze-failure:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10  # Get recent commits for analysis
+          ref: ${{ github.event.client_payload.commitSha }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Analyze Deployment Failure
+        id: analyze
+        run: |
+          # Extract deployment context from event
+          COMMIT_SHA="${{ github.event.client_payload.commitSha }}"
+          ERROR_MESSAGE="${{ github.event.client_payload.error }}"
+          PROJECT_NAME="${{ github.event.client_payload.projectName }}"
+          DEPLOYMENT_URL="${{ github.event.client_payload.deploymentUrl }}"
+          COMMIT_MESSAGE="${{ github.event.client_payload.commitMessage }}"
+          
+          echo "🔍 Analyzing deployment failure for commit: $COMMIT_SHA"
+          echo "📝 Error: $ERROR_MESSAGE"
+          
+          # Analyze recent commits and changes
+          echo "📊 Getting recent commits..."
+          git log --oneline -5 > recent_commits.txt
+          
+          echo "📁 Getting changed files..."
+          git show --name-only $COMMIT_SHA > changed_files.txt 2>/dev/null || echo "Unable to get changed files for commit $COMMIT_SHA" > changed_files.txt
+          
+          # Analyze error patterns and provide specific suggestions
+          LIKELY_CAUSE=""
+          SUGGESTED_FIXES=""
+          URGENCY="Medium"
+          
+          if echo "$ERROR_MESSAGE" | grep -i "module not found\|cannot resolve"; then
+            LIKELY_CAUSE="Missing import or incorrect file path"
+            SUGGESTED_FIXES="• Check if imported files exist and paths are correct\n• Verify import statements match actual file names (case-sensitive)\n• Ensure relative paths are correct (../ vs ./)"
+            URGENCY="High"
+          elif echo "$ERROR_MESSAGE" | grep -i "syntax error\|unexpected token"; then
+            LIKELY_CAUSE="Syntax error in recent code changes"
+            SUGGESTED_FIXES="• Check syntax in recently modified files\n• Look for missing brackets, semicolons, or quotes\n• Verify JSX syntax is correct"
+            URGENCY="High"
+          elif echo "$ERROR_MESSAGE" | grep -i "type error\|typescript"; then
+            LIKELY_CAUSE="TypeScript type mismatch or missing type definitions"
+            SUGGESTED_FIXES="• Run \`npm run type\` locally to see detailed type errors\n• Check for missing type imports\n• Verify interface/type definitions match usage"
+            URGENCY="Medium"
+          elif echo "$ERROR_MESSAGE" | grep -i "dependency\|npm\|yarn\|package"; then
+            LIKELY_CAUSE="Dependency installation or version conflict"
+            SUGGESTED_FIXES="• Clear node_modules and reinstall: \`rm -rf node_modules && npm install\`\n• Check for version conflicts in package.json\n• Verify all dependencies are listed in package.json"
+            URGENCY="High"
+          elif echo "$ERROR_MESSAGE" | grep -i "eslint\|lint"; then
+            LIKELY_CAUSE="Code linting errors preventing build"
+            SUGGESTED_FIXES="• Run \`npm run lint\` locally to see specific errors\n• Fix linting issues or update ESLint configuration\n• Consider using \`npm run lint-fix\` for auto-fixable issues"
+            URGENCY="Low"
+          elif echo "$ERROR_MESSAGE" | grep -i "build failed\|exit code 1"; then
+            LIKELY_CAUSE="Generic build failure - check build logs for details"
+            SUGGESTED_FIXES="• Check Vercel build logs for detailed error messages\n• Test build locally: \`npm run build\`\n• Verify environment variables are set correctly"
+            URGENCY="Medium"
+          else
+            LIKELY_CAUSE="Unknown build error - manual investigation required"
+            SUGGESTED_FIXES="• Check Vercel dashboard for detailed build logs\n• Test build process locally\n• Review recent code changes for potential issues"
+            URGENCY="Medium"
+          fi
+          
+          # Create comprehensive analysis report
+          cat << EOF > analysis_report.md
+          ## 🚨 Deployment Failure Analysis
+          
+          ### 📊 Failure Details
+          - **Project**: $PROJECT_NAME
+          - **Failed Commit**: [\`${COMMIT_SHA:0:7}\`](https://github.com/${{ github.repository }}/commit/$COMMIT_SHA)
+          - **Commit Message**: "$COMMIT_MESSAGE"
+          - **Time**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          - **Deployment URL**: $DEPLOYMENT_URL
+          - **Urgency**: **$URGENCY**
+          
+          ### ❌ Error Message
+          \`\`\`
+          $ERROR_MESSAGE
+          \`\`\`
+          
+          ### 🔍 Automated Analysis
+          **Likely Cause**: $LIKELY_CAUSE
+          
+          **Suggested Fixes**:
+          $SUGGESTED_FIXES
+          
+          ### 📁 Files Modified in Failed Commit
+          \`\`\`
+          $(cat changed_files.txt)
+          \`\`\`
+          
+          ### 📈 Recent Commit History
+          \`\`\`
+          $(cat recent_commits.txt)
+          \`\`\`
+          
+          ### 📋 Investigation Checklist
+          - [ ] **Review changed files** in the failed commit above
+          - [ ] **Check Vercel build logs** for additional error details
+          - [ ] **Test locally**: Run \`npm run build\` to reproduce the error
+          - [ ] **Verify dependencies**: Run \`npm install\` and check for conflicts
+          - [ ] **Check environment variables** in Vercel dashboard
+          
+          ### 🔧 Quick Debugging Commands
+          \`\`\`bash
+          # Test build locally
+          npm run build
+          
+          # Check for type errors
+          npm run type
+          
+          # Check for linting issues
+          npm run lint
+          
+          # Reinstall dependencies
+          rm -rf node_modules package-lock.json
+          npm install
+          \`\`\`
+          
+          ### 🔗 Useful Links
+          - [Vercel Dashboard](https://vercel.com/dashboard)
+          - [Build Logs](https://vercel.com/$PROJECT_NAME)
+          - [Vercel Build Troubleshooting](https://vercel.com/docs/deployments/troubleshoot-a-build)
+          - [Next.js Build Errors](https://nextjs.org/docs/messages)
+          
+          ### 🤖 Next Steps
+          1. **Review the analysis above** and try the suggested fixes
+          2. **Test changes locally** before pushing to avoid repeated failures
+          3. **Close this issue** once the deployment is fixed
+          4. **Consider adding tests** to prevent similar issues
+          
+          ---
+          *🤖 Auto-generated by GitHub Actions Deployment Monitor*  
+          *Generated at: $(date -u '+%Y-%m-%d %H:%M:%S UTC')*
+          EOF
+          
+          echo "✅ Analysis report generated"
+          echo "analysis_ready=true" >> $GITHUB_OUTPUT
+          echo "urgency=$URGENCY" >> $GITHUB_OUTPUT
+      
+      - name: Create GitHub Issue
+        if: steps.analyze.outputs.analysis_ready == 'true'
+        uses: actions/github-script@v7
+        id: create-issue
+        with:
+          script: |
+            const fs = require('fs');
+            const analysisReport = fs.readFileSync('analysis_report.md', 'utf8');
+            const urgency = '${{ steps.analyze.outputs.urgency }}';
+            
+            // Determine labels based on urgency and error type
+            const labels = ['deployment-failure', 'automated-analysis'];
+            if (urgency === 'High') labels.push('priority-high');
+            if (urgency === 'Medium') labels.push('priority-medium');
+            if (urgency === 'Low') labels.push('priority-low');
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Deployment Failure: ${{ github.event.client_payload.projectName }} [${urgency} Priority]`,
+              body: analysisReport,
+              labels: labels,
+              assignees: ['${{ github.repository_owner }}']
+            });
+            
+            console.log(`✅ Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            
+            // Set outputs for email notification
+            core.setOutput('issue_url', issue.data.html_url);
+            core.setOutput('issue_number', issue.data.number);
+            
+            return issue.data;
+      
+      - name: Send Email Notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: '🚨 [${{ steps.analyze.outputs.urgency }}] Deployment Failed: ${{ github.event.client_payload.projectName }}'
+          html_body: |
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
+                .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #dc3545; }
+                .analysis { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 15px 0; }
+                .urgency-high { border-left: 5px solid #dc3545; background: #f8d7da; }
+                .urgency-medium { border-left: 5px solid #ffc107; background: #fff3cd; }
+                .urgency-low { border-left: 5px solid #28a745; background: #d4edda; }
+                .footer { font-size: 12px; color: #666; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+                .button { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 5px; }
+                .error-box { background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; margin: 10px 0; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h2>🚨 Deployment Failure Detected</h2>
+                <p><strong>Priority:</strong> <span style="color: ${{ steps.analyze.outputs.urgency == 'High' && '#dc3545' || steps.analyze.outputs.urgency == 'Medium' && '#ffc107' || '#28a745' }};">${{ steps.analyze.outputs.urgency }}</span></p>
+              </div>
+              
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                <h3>📊 Deployment Details</h3>
+                <p><strong>Project:</strong> ${{ github.event.client_payload.projectName }}</p>
+                <p><strong>Failed Commit:</strong> <a href="https://github.com/${{ github.repository }}/commit/${{ github.event.client_payload.commitSha }}">${{ github.event.client_payload.commitSha }}</a></p>
+                <p><strong>Commit Message:</strong> "${{ github.event.client_payload.commitMessage }}"</p>
+                <p><strong>Time:</strong> ${{ github.event.client_payload.timestamp }}</p>
+                <p><strong>Deployment URL:</strong> <a href="${{ github.event.client_payload.deploymentUrl }}">${{ github.event.client_payload.deploymentUrl }}</a></p>
+              </div>
+              
+              <div class="error-box">
+                <strong>Error Message:</strong><br>
+                ${{ github.event.client_payload.error }}
+              </div>
+              
+              <div class="analysis">
+                <h3>🤖 GitHub Actions Analysis Complete</h3>
+                <p><strong>Issue Created:</strong> <a href="${{ steps.create-issue.outputs.issue_url }}">#${{ steps.create-issue.outputs.issue_number }}</a></p>
+                <p>Detailed analysis with fix suggestions has been generated automatically using your repository context.</p>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                  <a href="${{ steps.create-issue.outputs.issue_url }}" class="button">📋 View Analysis & Fixes</a>
+                  <a href="https://vercel.com/${{ github.event.client_payload.projectName }}" class="button">📊 Vercel Dashboard</a>
+                </div>
+              </div>
+              
+              <div class="footer">
+                <h4>🔧 Quick Actions</h4>
+                <ol>
+                  <li><strong>Check the GitHub issue</strong> for detailed analysis and suggested fixes</li>
+                  <li><strong>Test locally</strong>: <code>npm run build</code> to reproduce the error</li>
+                  <li><strong>Review recent changes</strong> in the failed commit</li>
+                  <li><strong>Apply suggested fixes</strong> and test before redeploying</li>
+                </ol>
+                
+                <p><strong>💰 Cost:</strong> FREE (GitHub Actions + GitHub Issues)</p>
+                <p><strong>🤖 Powered by:</strong> GitHub Actions with full repository context</p>
+                
+                <hr style="margin: 20px 0;">
+                <p style="font-size: 10px; color: #999;">
+                  This email was sent by GitHub Actions Deployment Monitor<br>
+                  Repository: ${{ github.repository }} | Workflow: ${{ github.workflow }}
+                </p>
+              </div>
+            </body>
+            </html>
+          to: ${{ secrets.ADMIN_EMAIL }}
+          from: 'GitHub Deployment Monitor <${{ secrets.EMAIL_USERNAME }}>'
+      
+      - name: Summary
+        run: |
+          echo "✅ Deployment failure analysis completed successfully!"
+          echo "📧 Email notification sent to: ${{ secrets.ADMIN_EMAIL }}"
+          echo "🔗 GitHub issue created: ${{ steps.create-issue.outputs.issue_url }}"
+          echo "🎯 Priority level: ${{ steps.analyze.outputs.urgency }}"
