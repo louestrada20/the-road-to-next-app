@@ -10,9 +10,10 @@ type SideBarItemProps = {
     navItem: NavItem;
     isActive: boolean;
     onClick?: () => void;
+    isMobile?: boolean;
 }
 
-const SideBarItem = ({isOpen, navItem, isActive, onClick}: SideBarItemProps) => {
+const SideBarItem = ({isOpen, navItem, isActive, onClick, isMobile = false}: SideBarItemProps) => {
 
 
     return (
@@ -27,8 +28,8 @@ const SideBarItem = ({isOpen, navItem, isActive, onClick}: SideBarItemProps) => 
        
         <span className={cn(
             "absolute left-12 text-base duration-200",
-            isOpen ? "md:block hidden" : "w-[78px]",
-            !isOpen && closedClassName
+            isMobile ? "block" : (isOpen ? "md:block hidden" : "w-[78px]"),
+            !isOpen && !isMobile && closedClassName
         )}>
             {navItem.title}
         </span>

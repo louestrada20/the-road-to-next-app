@@ -56,6 +56,7 @@ const MobileSidebar = () => {
                   isActive={activeIndex === index}
                   navItem={navItem}
                   onClick={() => setIsOpen(false)} // Close sheet when item is clicked
+                  isMobile={true} // This is the mobile sidebar
                 />
               ))}
             </nav>
