@@ -11,6 +11,19 @@ interface DeploymentContext {
 }
 
 export async function POST(request: NextRequest) {
+  // NOTE: This webhook handler is ready for Vercel Pro plan
+  // Currently using GitHub Actions approach (free)
+  // See docs/vercel-webhook-deployment-monitor.md for Pro plan setup
+  
+  return Response.json({
+    message: 'Vercel webhook handler ready for Pro plan',
+    currentApproach: 'GitHub Actions (free)',
+    upgradeInfo: 'See docs/vercel-webhook-deployment-monitor.md',
+    proRequired: true
+  });
+
+  /* UNCOMMENT WHEN UPGRADING TO VERCEL PRO:
+  
   try {
     const payload = await request.json();
     
@@ -202,6 +215,8 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     }, { status: 500 });
   }
+  
+  */ // End of commented Vercel Pro code
 }
 
 // Health check endpoint

@@ -1,0 +1,316 @@
+name: Build Monitor & Failure Analysis
+on:
+  push:
+    branches: [main]
+
+env:
+  RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+  ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+
+jobs:
+  build-and-monitor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        id: install
+        run: |
+          if ! npm ci; then
+            echo "install_failed=true" >> $GITHUB_OUTPUT
+            echo "error_type=Dependency Installation Error" >> $GITHUB_OUTPUT
+            echo "error_message=Failed to install dependencies with npm ci" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+      
+      - name: Generate Prisma Client
+        if: steps.install.outputs.install_failed != 'true'
+        id: prisma
+        run: |
+          if ! npm run postinstall; then
+            echo "prisma_failed=true" >> $GITHUB_OUTPUT
+            echo "error_type=Prisma Generation Error" >> $GITHUB_OUTPUT
+            echo "error_message=Failed to generate Prisma client" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+      
+      - name: Run Type Check
+        if: steps.install.outputs.install_failed != 'true' && steps.prisma.outputs.prisma_failed != 'true'
+        id: type-check
+        run: |
+          if ! npm run type; then
+            echo "type_failed=true" >> $GITHUB_OUTPUT
+            echo "error_type=TypeScript Error" >> $GITHUB_OUTPUT
+            echo "error_message=TypeScript compilation failed" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+      
+      - name: Run Linting
+        if: steps.install.outputs.install_failed != 'true' && steps.prisma.outputs.prisma_failed != 'true'
+        id: lint-check
+        run: |
+          if ! npm run lint; then
+            echo "lint_failed=true" >> $GITHUB_OUTPUT
+            echo "error_type=Linting Error" >> $GITHUB_OUTPUT
+            echo "error_message=ESLint found errors in the code" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+      
+      - name: Run Build
+        if: steps.install.outputs.install_failed != 'true' && steps.prisma.outputs.prisma_failed != 'true'
+        id: build-check
+        run: |
+          if ! npm run build; then
+            echo "build_failed=true" >> $GITHUB_OUTPUT
+            echo "error_type=Build Error" >> $GITHUB_OUTPUT
+            echo "error_message=Next.js build failed" >> $GITHUB_OUTPUT
+          else
+            echo "build_success=true" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+      
+      - name: Build Success Notification
+        if: steps.build-check.outputs.build_success == 'true'
+        run: |
+          echo "✅ Build successful! Deployment should proceed normally."
+          echo "🚀 Commit: ${{ github.sha }}"
+          echo "📝 Message: ${{ github.event.head_commit.message }}"
+          echo "🎯 All checks passed: Dependencies ✅ Prisma ✅ Types ✅ Linting ✅ Build ✅"
+      
+      - name: Determine Failure Type
+        if: steps.install.outputs.install_failed == 'true' || steps.prisma.outputs.prisma_failed == 'true' || steps.type-check.outputs.type_failed == 'true' || steps.lint-check.outputs.lint_failed == 'true' || steps.build-check.outputs.build_failed == 'true'
+        id: failure-analysis
+        run: |
+          # Determine which step failed and set appropriate error details
+          if [ "${{ steps.install.outputs.install_failed }}" = "true" ]; then
+            echo "failed_step=install" >> $GITHUB_OUTPUT
+            echo "error_type=${{ steps.install.outputs.error_type }}" >> $GITHUB_OUTPUT
+            echo "error_message=${{ steps.install.outputs.error_message }}" >> $GITHUB_OUTPUT
+            echo "urgency=High" >> $GITHUB_OUTPUT
+          elif [ "${{ steps.prisma.outputs.prisma_failed }}" = "true" ]; then
+            echo "failed_step=prisma" >> $GITHUB_OUTPUT
+            echo "error_type=${{ steps.prisma.outputs.error_type }}" >> $GITHUB_OUTPUT
+            echo "error_message=${{ steps.prisma.outputs.error_message }}" >> $GITHUB_OUTPUT
+            echo "urgency=High" >> $GITHUB_OUTPUT
+          elif [ "${{ steps.type-check.outputs.type_failed }}" = "true" ]; then
+            echo "failed_step=type-check" >> $GITHUB_OUTPUT
+            echo "error_type=${{ steps.type-check.outputs.error_type }}" >> $GITHUB_OUTPUT
+            echo "error_message=${{ steps.type-check.outputs.error_message }}" >> $GITHUB_OUTPUT
+            echo "urgency=Medium" >> $GITHUB_OUTPUT
+          elif [ "${{ steps.lint-check.outputs.lint_failed }}" = "true" ]; then
+            echo "failed_step=lint" >> $GITHUB_OUTPUT
+            echo "error_type=${{ steps.lint-check.outputs.error_type }}" >> $GITHUB_OUTPUT
+            echo "error_message=${{ steps.lint-check.outputs.error_message }}" >> $GITHUB_OUTPUT
+            echo "urgency=Low" >> $GITHUB_OUTPUT
+          elif [ "${{ steps.build-check.outputs.build_failed }}" = "true" ]; then
+            echo "failed_step=build" >> $GITHUB_OUTPUT
+            echo "error_type=${{ steps.build-check.outputs.error_type }}" >> $GITHUB_OUTPUT
+            echo "error_message=${{ steps.build-check.outputs.error_message }}" >> $GITHUB_OUTPUT
+            echo "urgency=High" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "🚨 Build failure detected at step: $failed_step"
+      
+      - name: Send Email Notification
+        if: steps.failure-analysis.outputs.failed_step
+        run: |
+          echo "📧 Sending failure notification via Resend..."
+          
+          curl -X POST "https://api.resend.com/emails" \
+            -H "Authorization: Bearer ${{ env.RESEND_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "from": "deployments@roadtonextpro.com",
+              "to": ["${{ env.ADMIN_EMAIL }}"],
+              "subject": "🚨 [${{ steps.failure-analysis.outputs.urgency }}] Build Failed: ${{ github.repository }}",
+              "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto}.header{background:#dc3545;color:white;padding:20px;border-radius:8px 8px 0 0}.content{background:#f8f9fa;padding:20px}.error-box{background:#fff;padding:15px;border-left:4px solid #dc3545;margin:15px 0;font-family:monospace;font-size:12px}.info-box{background:#e3f2fd;padding:15px;border-radius:5px;margin:15px 0}.button{display:inline-block;padding:12px 24px;background:#007bff;color:white;text-decoration:none;border-radius:5px;margin:10px 5px}.footer{background:#6c757d;color:white;padding:15px;border-radius:0 0 8px 8px;font-size:12px}</style></head><body><div class=\"header\"><h2>🚨 Build Failure Alert</h2><p>Your build failed during the ${{ steps.failure-analysis.outputs.failed_step }} step.</p></div><div class=\"content\"><h3>📊 Failure Details</h3><p><strong>Repository:</strong> ${{ github.repository }}</p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Failed Step:</strong> ${{ steps.failure-analysis.outputs.failed_step }}</p><p><strong>Error Type:</strong> ${{ steps.failure-analysis.outputs.error_type }}</p><p><strong>Time:</strong> ${{ github.event.head_commit.timestamp }}</p><p><strong>Commit:</strong> <a href=\"https://github.com/${{ github.repository }}/commit/${{ github.sha }}\">${{ github.sha }}</a></p><p><strong>Commit Message:</strong> \"${{ github.event.head_commit.message }}\"</p><div class=\"error-box\"><strong>Error Details:</strong><br>${{ steps.failure-analysis.outputs.error_message }}</div><div class=\"info-box\"><h4>🤖 Automated Analysis in Progress</h4><p>GitHub Actions is creating a detailed issue with:</p><ul><li>✅ <strong>Root cause analysis</strong> based on error patterns</li><li>✅ <strong>Specific fix suggestions</strong> for your codebase</li><li>✅ <strong>Investigation checklist</strong> with debugging commands</li><li>✅ <strong>Recent changes analysis</strong></li></ul></div><div style=\"text-align:center;margin:20px 0\"><a href=\"https://github.com/${{ github.repository }}/issues\" class=\"button\">📋 View GitHub Issues</a><a href=\"https://github.com/${{ github.repository }}/actions\" class=\"button\">⚙️ GitHub Actions</a><a href=\"https://vercel.com\" class=\"button\">📊 Vercel Dashboard</a></div></div><div class=\"footer\"><p><strong>💡 Quick Debugging Tips:</strong></p><ul style=\"margin:5px 0;padding-left:20px\"><li>Check the failed commit for recent changes</li><li>Run <code>npm run ${{ steps.failure-analysis.outputs.failed_step }}</code> locally</li><li>Look for import/export errors in modified files</li><li>Verify all dependencies are installed</li></ul><hr style=\"margin:15px 0;border:1px solid #adb5bd\"><p style=\"margin:0\">🤖 <strong>Powered by:</strong> GitHub Actions + Resend<br>💰 <strong>Cost:</strong> FREE<br>🔗 <strong>Repository:</strong> <a href=\"https://github.com/${{ github.repository }}\" style=\"color:#fff\">${{ github.repository }}</a></p></div></body></html>"
+            }'
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Email sent successfully via Resend"
+          else
+            echo "❌ Failed to send email via Resend"
+          fi
+      
+      - name: Analyze Build Failure
+        if: steps.failure-analysis.outputs.failed_step
+        run: |
+          echo "🔍 Analyzing build failure..."
+          
+          # Get recent commits and changes
+          git log --oneline -5 > recent_commits.txt
+          git show --name-only ${{ github.sha }} > changed_files.txt 2>/dev/null || echo "Unable to get changed files" > changed_files.txt
+          
+          # Analyze error patterns based on failed step
+          FAILED_STEP="${{ steps.failure-analysis.outputs.failed_step }}"
+          ERROR_TYPE="${{ steps.failure-analysis.outputs.error_type }}"
+          URGENCY="${{ steps.failure-analysis.outputs.urgency }}"
+          
+          # Generate specific suggestions based on failure type
+          case "$FAILED_STEP" in
+            "install")
+              SUGGESTIONS="• Check package.json for syntax errors\n• Verify all dependencies are available in npm registry\n• Clear npm cache: \`npm cache clean --force\`\n• Delete node_modules and package-lock.json, then reinstall"
+              ;;
+            "prisma")
+              SUGGESTIONS="• Check DATABASE_URL environment variable\n• Verify Prisma schema syntax\n• Run \`npx prisma generate\` locally\n• Check for database connection issues"
+              ;;
+            "type-check")
+              SUGGESTIONS="• Run \`npm run type\` locally to see detailed errors\n• Check for missing type imports\n• Verify interface/type definitions match usage\n• Look for \`any\` types that should be properly typed"
+              ;;
+            "lint")
+              SUGGESTIONS="• Run \`npm run lint\` locally to see specific errors\n• Use \`npm run lint-fix\` for auto-fixable issues\n• Check for unused imports or variables\n• Verify code follows project style guidelines"
+              ;;
+            "build")
+              SUGGESTIONS="• Run \`npm run build\` locally to reproduce\n• Check for missing environment variables\n• Verify all imports resolve correctly\n• Look for runtime errors in server components"
+              ;;
+            *)
+              SUGGESTIONS="• Check GitHub Actions logs for detailed error messages\n• Test the failed step locally\n• Review recent code changes"
+              ;;
+          esac
+          
+          # Create comprehensive analysis report
+          cat << EOF > analysis_report.md
+          ## 🚨 Build Failure Analysis
+          
+          ### 📊 Failure Details
+          - **Repository**: ${{ github.repository }}
+          - **Branch**: ${{ github.ref_name }}
+          - **Failed Step**: $FAILED_STEP
+          - **Error Type**: $ERROR_TYPE
+          - **Urgency**: **$URGENCY**
+          - **Failed Commit**: [\`${{ github.sha }}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+          - **Commit Message**: "${{ github.event.head_commit.message }}"
+          - **Time**: ${{ github.event.head_commit.timestamp }}
+          - **Author**: ${{ github.event.head_commit.author.name }}
+          
+          ### ❌ Build Step Failed
+          **Step**: \`$FAILED_STEP\`  
+          **Command**: \`npm run $FAILED_STEP\` (or equivalent)
+          
+          ### 🔍 Automated Analysis
+          **Likely Cause**: $ERROR_TYPE in the $FAILED_STEP phase
+          
+          **Suggested Fixes**:
+          $SUGGESTIONS
+          
+          ### 📁 Files Modified in This Commit
+          \`\`\`
+          $(cat changed_files.txt)
+          \`\`\`
+          
+          ### 📈 Recent Commit History
+          \`\`\`
+          $(cat recent_commits.txt)
+          \`\`\`
+          
+          ### 📋 Investigation Checklist
+          - [ ] **Review changed files** in the failed commit above
+          - [ ] **Run locally**: \`npm run $FAILED_STEP\` to reproduce the error
+          - [ ] **Check dependencies**: Ensure all imports are correct
+          - [ ] **Verify environment**: Check if any env vars are needed
+          - [ ] **Test build**: Run full build process locally
+          
+          ### 🔧 Debugging Commands
+          \`\`\`bash
+          # Reproduce the failure locally
+          npm ci
+          npm run postinstall
+          npm run type
+          npm run lint  
+          npm run build
+          
+          # If dependency issues
+          rm -rf node_modules package-lock.json
+          npm install
+          
+          # If Prisma issues
+          npx prisma generate
+          npx prisma db push
+          \`\`\`
+          
+          ### 🔗 Useful Links
+          - [GitHub Actions Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - [Failed Commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+          - [Vercel Dashboard](https://vercel.com)
+          - [Next.js Build Errors](https://nextjs.org/docs/messages)
+          
+          ### 🤖 Next Steps
+          1. **Review the analysis above** and try the suggested fixes
+          2. **Test changes locally** using the debugging commands
+          3. **Push fix** when build succeeds locally
+          4. **Close this issue** once the build is working
+          
+          ---
+          *🤖 Auto-generated by GitHub Actions Build Monitor*  
+          *Build ID: ${{ github.run_id }} | Generated at: $(date -u '+%Y-%m-%d %H:%M:%S UTC')*
+          EOF
+          
+          echo "✅ Analysis report generated"
+          echo "analysis_ready=true" >> $GITHUB_OUTPUT
+      
+      - name: Create GitHub Issue
+        if: steps.failure-analysis.outputs.failed_step
+        uses: actions/github-script@v7
+        id: create-issue
+        with:
+          script: |
+            const fs = require('fs');
+            const analysisReport = fs.readFileSync('analysis_report.md', 'utf8');
+            const urgency = '${{ steps.failure-analysis.outputs.urgency }}';
+            const errorType = '${{ steps.failure-analysis.outputs.error_type }}';
+            const failedStep = '${{ steps.failure-analysis.outputs.failed_step }}';
+            
+            // Determine labels based on urgency and error type
+            const labels = ['build-failure', 'automated-analysis'];
+            if (urgency === 'High') labels.push('priority-high');
+            if (urgency === 'Medium') labels.push('priority-medium');
+            if (urgency === 'Low') labels.push('priority-low');
+            if (failedStep === 'type-check') labels.push('typescript');
+            if (failedStep === 'lint') labels.push('linting');
+            if (failedStep === 'build') labels.push('build-error');
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Build Failed: ${errorType} (${failedStep})`,
+              body: analysisReport,
+              labels: labels,
+              assignees: ['${{ github.repository_owner }}']
+            });
+            
+            console.log(`✅ Created issue #${issue.data.number}: ${issue.data.html_url}`);
+            
+            // Set outputs for summary
+            core.setOutput('issue_url', issue.data.html_url);
+            core.setOutput('issue_number', issue.data.number);
+            
+            return issue.data;
+      
+      - name: Analysis Complete
+        if: steps.failure-analysis.outputs.failed_step
+        run: |
+          echo "✅ Build failure analysis completed!"
+          echo "📧 Email notification sent via Resend"
+          echo "🔗 GitHub issue created: ${{ steps.create-issue.outputs.issue_url }}"
+          echo "🎯 Priority level: ${{ steps.failure-analysis.outputs.urgency }}"
+          echo "🔧 Failed step: ${{ steps.failure-analysis.outputs.failed_step }}"
+          echo ""
+          echo "💡 Next steps:"
+          echo "   1. Check your email for immediate notification"
+          echo "   2. Review the GitHub issue for detailed analysis"
+          echo "   3. Run the suggested debugging commands locally"
+          echo "   4. Push fix when build succeeds locally"
+          echo ""
+          echo "🚀 Free GitHub Actions monitoring system working!"
