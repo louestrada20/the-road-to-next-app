@@ -5,13 +5,15 @@ export default function LandingLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Landing page has its own layout without the h-screen/overflow container
+  // This prevents double scrollbars and gives the landing page natural document flow
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="min-h-screen flex-1 overflow-y-auto overflow-x-hidden pt-16">
+      <div className="pt-16">
         {children}
-      </main>
-    </>
+      </div>
+    </div>
   )
 }
 
