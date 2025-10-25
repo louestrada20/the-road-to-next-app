@@ -45,7 +45,7 @@ export default function RootLayout({
           <div className="flex h-screen overflow-hidden border-collapse">
             <SideBar/>
             <main
-                className='min-h-screen flex-1 overflow-y-auto overflow-x-hidden pt-24 pb-16 px-8 bg-secondary/20 flex flex-col '>
+                className='min-h-screen flex-1 overflow-y-auto overflow-x-hidden pt-24 pb-16 px-3 sm:px-6 lg:px-8 bg-secondary/20 flex flex-col '>
               {children}
             </main>
           </div>

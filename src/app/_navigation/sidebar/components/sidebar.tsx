@@ -32,13 +32,14 @@ const SideBar = () => {
 
     if (!user || !isFetched) {
         // return an empty div placeholder for the sidebar to avoid layout shift issues while the user is fetched and auth'd
-        return <div className="w-[78px] bg-secondary/20 h-screen border-r pt-24" ></div>
+        return <div className="hidden sm:block w-[78px] bg-secondary/20 h-screen border-r pt-24" ></div>
     }
 
     return (
         <nav className={cn(
             "animate-sidebar-from-left",
             "h-screen  border-r pt-24",
+            "hidden sm:block", // Hide on mobile, show on small screens and up
             isTransition && "duration-200",
             isOpen ? "md:w-60 w-[78px]" : "w-[78px]"
             )}

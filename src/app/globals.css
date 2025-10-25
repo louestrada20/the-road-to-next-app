@@ -148,6 +148,21 @@
 
 
 
+@layer utilities {
+  /* Custom mobile breakpoint utilities */
+  .xs\:inline {
+    @media (min-width: 475px) {
+      display: inline;
+    }
+  }
+  
+  .xs\:hidden {
+    @media (min-width: 475px) {
+      display: none;
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
