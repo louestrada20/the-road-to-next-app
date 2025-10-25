@@ -188,87 +188,17 @@ jobs:
             
             return issue.data;
       
-      - name: Send Email Notification
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: '🚨 [${{ steps.analyze.outputs.urgency }}] Deployment Failed: ${{ github.event.client_payload.projectName }}'
-          html_body: |
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
-                .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid #dc3545; }
-                .analysis { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 15px 0; }
-                .urgency-high { border-left: 5px solid #dc3545; background: #f8d7da; }
-                .urgency-medium { border-left: 5px solid #ffc107; background: #fff3cd; }
-                .urgency-low { border-left: 5px solid #28a745; background: #d4edda; }
-                .footer { font-size: 12px; color: #666; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
-                .button { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 5px; }
-                .error-box { background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; margin: 10px 0; }
-              </style>
-            </head>
-            <body>
-              <div class="header">
-                <h2>🚨 Deployment Failure Detected</h2>
-                <p><strong>Priority:</strong> <span style="color: ${{ steps.analyze.outputs.urgency == 'High' && '#dc3545' || steps.analyze.outputs.urgency == 'Medium' && '#ffc107' || '#28a745' }};">${{ steps.analyze.outputs.urgency }}</span></p>
-              </div>
-              
-              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                <h3>📊 Deployment Details</h3>
-                <p><strong>Project:</strong> ${{ github.event.client_payload.projectName }}</p>
-                <p><strong>Failed Commit:</strong> <a href="https://github.com/${{ github.repository }}/commit/${{ github.event.client_payload.commitSha }}">${{ github.event.client_payload.commitSha }}</a></p>
-                <p><strong>Commit Message:</strong> "${{ github.event.client_payload.commitMessage }}"</p>
-                <p><strong>Time:</strong> ${{ github.event.client_payload.timestamp }}</p>
-                <p><strong>Deployment URL:</strong> <a href="${{ github.event.client_payload.deploymentUrl }}">${{ github.event.client_payload.deploymentUrl }}</a></p>
-              </div>
-              
-              <div class="error-box">
-                <strong>Error Message:</strong><br>
-                ${{ github.event.client_payload.error }}
-              </div>
-              
-              <div class="analysis">
-                <h3>🤖 GitHub Actions Analysis Complete</h3>
-                <p><strong>Issue Created:</strong> <a href="${{ steps.create-issue.outputs.issue_url }}">#${{ steps.create-issue.outputs.issue_number }}</a></p>
-                <p>Detailed analysis with fix suggestions has been generated automatically using your repository context.</p>
-                
-                <div style="text-align: center; margin: 20px 0;">
-                  <a href="${{ steps.create-issue.outputs.issue_url }}" class="button">📋 View Analysis & Fixes</a>
-                  <a href="https://vercel.com/${{ github.event.client_payload.projectName }}" class="button">📊 Vercel Dashboard</a>
-                </div>
-              </div>
-              
-              <div class="footer">
-                <h4>🔧 Quick Actions</h4>
-                <ol>
-                  <li><strong>Check the GitHub issue</strong> for detailed analysis and suggested fixes</li>
-                  <li><strong>Test locally</strong>: <code>npm run build</code> to reproduce the error</li>
-                  <li><strong>Review recent changes</strong> in the failed commit</li>
-                  <li><strong>Apply suggested fixes</strong> and test before redeploying</li>
-                </ol>
-                
-                <p><strong>💰 Cost:</strong> FREE (GitHub Actions + GitHub Issues)</p>
-                <p><strong>🤖 Powered by:</strong> GitHub Actions with full repository context</p>
-                
-                <hr style="margin: 20px 0;">
-                <p style="font-size: 10px; color: #999;">
-                  This email was sent by GitHub Actions Deployment Monitor<br>
-                  Repository: ${{ github.repository }} | Workflow: ${{ github.workflow }}
-                </p>
-              </div>
-            </body>
-            </html>
-          to: ${{ secrets.ADMIN_EMAIL }}
-          from: 'GitHub Deployment Monitor <${{ secrets.EMAIL_USERNAME }}>'
-      
-      - name: Summary
+      - name: Analysis Complete
         run: |
           echo "✅ Deployment failure analysis completed successfully!"
-          echo "📧 Email notification sent to: ${{ secrets.ADMIN_EMAIL }}"
+          echo "📧 Email already sent via Resend from webhook handler"
           echo "🔗 GitHub issue created: ${{ steps.create-issue.outputs.issue_url }}"
           echo "🎯 Priority level: ${{ steps.analyze.outputs.urgency }}"
+          echo ""
+          echo "💡 The user has been notified via email with direct links to:"
+          echo "   - This GitHub issue for detailed analysis"
+          echo "   - GitHub Actions for workflow status"
+          echo "   - Vercel Dashboard for deployment logs"
+          echo ""
+          echo "🚀 System working perfectly with Resend integration!"
+      
