@@ -15,6 +15,7 @@ export const getMemberships = async (organizationId: string) => {
         const memberships = await prisma.membership.findMany({
             where: {
                 organizationId: organizationId,
+                isActive: true, // Only show active members
             },
             include: {
                 user: {

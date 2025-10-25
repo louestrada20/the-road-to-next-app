@@ -5,6 +5,7 @@ import {attachmentDeletedEvent} from "@/features/attachments/events/event-attach
 import {emailVerificationEvent} from "@/features/auth/events/event-email-verification";
 import {signUpFanOut} from "@/features/auth/events/event-signup";
 import {welcomeEvent} from "@/features/auth/events/event-welcome";
+import {deprovisioningWorkflow} from "@/features/deprovisioning/events/event-deprovisioning-workflow";
 import {invitationCreatedEvent} from "@/features/invitation/events/event-invitation-created";
 import { organizationCreatedEvent } from "@/features/organization/events/event-organization.created";
 import {organizationDeletedEvent} from "@/features/organization/events/event-organization.deleted";
@@ -22,6 +23,7 @@ export const {GET, POST, PUT}  = serve({
         attachmentDeletedEvent,
         organizationDeletedEvent,
         organizationCreatedEvent,
-        emailChangeEvent
+        emailChangeEvent,
+        deprovisioningWorkflow,
     ],
 })

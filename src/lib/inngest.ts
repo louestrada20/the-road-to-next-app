@@ -8,6 +8,19 @@ import { OrganizationCreateEventArgs } from '@/features/organization/events/even
 import {OrganizationDeletedEventArgs} from "@/features/organization/events/event-organization.deleted";
 import {PasswordResetEventArgs} from "@/features/password/events/event-password-reset";
 
+export type DeprovisioningScheduledEventArgs = {
+    data: {
+        organizationId: string;
+        queueEntryIds: string[];
+    };
+};
+
+export type DeprovisioningCanceledEventArgs = {
+    data: {
+        organizationId: string;
+    };
+};
+
 type Events = {
     "app/password.password-reset": PasswordResetEventArgs;
     "app/account.welcome": WelcomeEventArgs;
@@ -18,7 +31,9 @@ type Events = {
     // thumbnail generation now handled by Next.js Image component
     "app/organization.deleted": OrganizationDeletedEventArgs;
     "app/organization.created": OrganizationCreateEventArgs;
-    "app/account.email-change": EmailChangeEventArgs;       
+    "app/account.email-change": EmailChangeEventArgs;
+    "app/deprovisioning.scheduled": DeprovisioningScheduledEventArgs;
+    "app/deprovisioning.canceled": DeprovisioningCanceledEventArgs;
 };
 export const inngest = new Inngest({
     id: "the-road-to-next-pro",

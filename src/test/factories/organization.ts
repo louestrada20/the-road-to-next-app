@@ -11,6 +11,7 @@ export const createMockOrganization = (overrides: Partial<Organization> = {}): O
     createdAt: new Date(),
     updatedAt: new Date(),
     stripeCustomerId: `cus_test_${orgIdCounter}`,
+    creatorUserId: null,
     ...overrides,
   }
 }

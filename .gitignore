@@ -43,11 +43,20 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Build outputs
+/dist/
+
 # Development files
 notes.txt
 trust.json
 .cursorrules
 .vscode/
 
+# MCP Configuration (contains credentials)
+.cursor/
+
 # Lambda build artifacts (AWS deployment)
 lambda-build/
+
+# add markdown folder here for docs
+docs/
