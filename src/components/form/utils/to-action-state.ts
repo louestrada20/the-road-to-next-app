@@ -22,7 +22,6 @@ export const fromErrorToActionState = (error: unknown, formData?: FormData): Act
         return {
             status: "ERROR",
             message: "",
-            // @ts-expect-error - should be good
             fieldErrors: error.flatten().fieldErrors,
             payload: formData,
             timestamp: Date.now(),

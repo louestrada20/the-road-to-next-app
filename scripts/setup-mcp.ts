@@ -1,7 +1,7 @@
 #!/usr/bin/env node
+import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as dotenv from 'dotenv';
 
 // Load .env
 dotenv.config({ path: '.env' });

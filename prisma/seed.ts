@@ -1,12 +1,12 @@
 import { PrismaClient } from "@prisma/client";
-import { hashPassword } from "@/features/auth/password";
-import { createDefaultAttachments } from "@/features/attachments/utils/create-default-attachments";
-import { list, del } from "@vercel/blob";
-import { findTicketIdsFromText } from "@/utils/find-ids-from-text";
-import * as ticketData from "@/features/ticket/data";
-import { generateRandomToken, hashToken } from "@/utils/crypto";
+import { del,list } from "@vercel/blob";
 import * as fs from 'fs';
 import * as path from 'path';
+import { createDefaultAttachments } from "@/features/attachments/utils/create-default-attachments";
+import { hashPassword } from "@/features/auth/password";
+import * as ticketData from "@/features/ticket/data";
+import { generateRandomToken, hashToken } from "@/utils/crypto";
+import { findTicketIdsFromText } from "@/utils/find-ids-from-text";
 
 const prisma = new PrismaClient();
 

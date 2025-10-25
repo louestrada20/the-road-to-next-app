@@ -38,13 +38,13 @@ export const DeprovisioningCountdown = ({
       }
     };
 
+    const updateTime = () => setTimeRemaining(calculateTimeRemaining());
+    
     // Initial calculation
-    setTimeRemaining(calculateTimeRemaining());
+    updateTime();
 
     // Update every minute for accurate countdown
-    const interval = setInterval(() => {
-      setTimeRemaining(calculateTimeRemaining());
-    }, 60000); // Update every minute
+    const interval = setInterval(updateTime, 60000); // Update every minute
 
     return () => clearInterval(interval);
   }, [scheduledDate]);
