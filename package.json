@@ -2,6 +2,9 @@
   "name": "the-road-to-next-app",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -21,7 +24,7 @@
     "lint:test": "eslint src/**/*.test.{ts,tsx} src/test/**/*.{ts,tsx} e2e/**/*.spec.ts",
     "prebuild": "npm run type && npm run type:test",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && next build",
+    "vercel-build": "node scripts/prisma-vercel-build.js && next build",
     "prisma-seed": "tsx prisma/seed.ts",
     "stripe-seed": "tsx src/lib/stripe/seed.ts",
     "seed": "npm run prisma-seed && npm run stripe-seed",

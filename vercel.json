@@ -1,7 +1,32 @@
 {
   "buildCommand": "npm run vercel-build",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "env": {
+    "PRISMA_GENERATE_SKIP_AUTOINSTALL": "true",
+    "PRISMA_QUERY_ENGINE_LIBRARY": "node_modules/.prisma/client/libquery_engine-rhel-openssl-3.0.x.so.node"
+  },
   "functions": {
-    "app/**/*": {
+    "app/api/deployment-monitor/route.ts": {
+      "includeFiles": "node_modules/.prisma/client/**"
+    },
+    "app/api/inngest/route.ts": {
+      "includeFiles": "node_modules/.prisma/client/**"
+    },
+    "app/api/stripe/route.ts": {
+      "includeFiles": "node_modules/.prisma/client/**"
+    },
+    "app/api/tickets/route.ts": {
+      "includeFiles": "node_modules/.prisma/client/**"
+    },
+    "app/api/tickets/[ticketId]/route.ts": {
+      "includeFiles": "node_modules/.prisma/client/**"
+    },
+    "app/**/*.tsx": {
+      "includeFiles": "node_modules/.prisma/client/**"
+    },
+    "app/**/*.ts": {
       "includeFiles": "node_modules/.prisma/client/**"
     }
-  }}
+  }
+}
