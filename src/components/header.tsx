@@ -3,11 +3,11 @@ import { LucideSquareKanban, Menu} from "lucide-react";
 import Link from "next/link";
 import {AccountDropdown} from "@/app/_navigation/account-dropdown";
 import {MobileAuthDropdown} from "@/components/mobile-auth-dropdown";
+import {useMobileSidebar} from "@/components/mobile-sidebar-context";
 import {ThemeSwitcher} from "@/components/theme/theme-switcher";
 import {buttonVariants} from "@/components/ui/button";
 import {useAuth} from "@/features/auth/hooks/use-auth";
 import {homePath, signInPath, signUpPath} from "@/paths";
-import {useMobileSidebar} from "@/components/mobile-sidebar-context";
 
 
 const Header =  () => {

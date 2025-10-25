@@ -3,17 +3,16 @@
 import { usePathname } from "next/navigation";
 import { SideBarItem } from "@/app/_navigation/sidebar/components/sidebar-item";
 import { navItems } from "@/app/_navigation/sidebar/constants";
-import { useAuth } from "@/features/auth/hooks/use-auth";
-import { cn } from "@/lib/utils";
-import { pricingPath, signInPath, signUpPath } from "@/paths";
-import { getActivePath } from "@/utils/get-active-path";
+import { useMobileSidebar } from "@/components/mobile-sidebar-context";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useMobileSidebar } from "@/components/mobile-sidebar-context";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { pricingPath, signInPath, signUpPath } from "@/paths";
+import { getActivePath } from "@/utils/get-active-path";
 
 const MobileSidebar = () => {
   const pathName = usePathname();

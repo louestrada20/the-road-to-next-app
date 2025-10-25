@@ -25,8 +25,8 @@ export const DeprovisioningWarningBanner = async ({
 
   // Check if scheduled date has passed
   const now = new Date();
-  const scheduledDate = new Date(data.scheduledDate);
-  const hasPassed = scheduledDate.getTime() <= now.getTime();
+  const scheduledDateTime = new Date(scheduledDate);
+  const hasPassed = scheduledDateTime.getTime() <= now.getTime();
 
   // Determine styling based on urgency
   const config = {
