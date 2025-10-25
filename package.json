@@ -19,7 +19,7 @@
     "test:e2e:report": "playwright show-report",
     "type:test": "tsc -p tsconfig.test.json --noEmit",
     "lint:test": "eslint src/**/*.test.{ts,tsx} src/test/**/*.{ts,tsx} e2e/**/*.spec.ts",
-    "prebuild": "npm run type && npm run type:test",
+    "prebuild": "npm run type && npm run type:test && npx prisma generate",
     "postinstall": "prisma generate",
     "prisma-seed": "tsx prisma/seed.ts",
     "stripe-seed": "tsx src/lib/stripe/seed.ts",
@@ -27,7 +27,8 @@
     "seed:reset": "npm run seed",
     "setup-mcp": "tsx scripts/setup-mcp.ts",
     "email": "email dev --dir src/emails",
-    "mcp:ticketing": "tsx src/mcp-server-ticketing/index.ts"
+    "mcp:ticketing": "tsx src/mcp-server-ticketing/index.ts",
+    "test:vercel": "node scripts/test-vercel-build.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.1",
