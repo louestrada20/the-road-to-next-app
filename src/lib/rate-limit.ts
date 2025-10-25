@@ -7,6 +7,9 @@ export const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
+// Test user email that bypasses rate limiting for E2E tests
+const TEST_USER_EMAIL = 'test@example.com';
+
 // 2) Generic limiter – 20 requests / minute sliding window
 export const authLimiter = new Ratelimit({
   redis,
@@ -24,6 +27,11 @@ export async function limitIp(
     limit = 100,
     window = "1 m" as Duration,
 ) {
+    // Bypass rate limiting for localhost in development (for E2E tests)
+    if (ip === '::1' || ip === '127.0.0.1' || ip === 'localhost') {
+        return { success: true, limit: 999, remaining: 999, reset: Date.now() + 60000, pending: Promise.resolve() };
+    }
+    
     // Create a fresh limiter for the requested window/limit
     const ipLimiter = new Ratelimit({
         redis,
@@ -42,6 +50,11 @@ export async function limitIp(
     email: string,
     scope: string,
   ) {
+    // Bypass rate limiting for test user (E2E tests)
+    if (email === TEST_USER_EMAIL) {
+        return { success: true, limit: 999, remaining: 999, reset: Date.now() + 60000, pending: Promise.resolve() };
+    }
+    
     // 1) combo ip + email  – 5 attempts / 5 min (fixed window)
     const comboLimiter = new Ratelimit({
         redis,

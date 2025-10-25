@@ -13,6 +13,7 @@ export const getStripeProvisioningByOrganization = async (organizationId: string
         prisma.membership.count({
             where: {
                 organizationId,
+                isActive: true, // Only count active members
             },
         }),
         prisma.invitation.count({

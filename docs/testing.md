@@ -1,5 +1,7 @@
 # Testing Guide for The Road to Next
 
+**Last Updated:** 2025-10-25
+
 ## Overview
 
 This guide covers the testing strategy and implementation for The Road to Next application. We use a comprehensive testing approach with different layers of tests to ensure reliability and maintainability.

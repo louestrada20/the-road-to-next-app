@@ -20,6 +20,11 @@ model Organization {
   credentials   Credential[]
   stripeCustomer StripeCustomer?
   stripeCustomerId String?
+
+  creatorUserId String?
+  creatorUser User? @relation("OrganizationCreator", fields: [creatorUserId], references: [id], onDelete: SetNull)
+
+  deprovisioningQueue DeprovisioningQueue[]
 }
 
 model StripeCustomer {
@@ -49,12 +54,22 @@ model Credential {
     createdAt   DateTime   @default(now())
     secretHash  String  @unique
     name   String
+    type   CredentialType @default(API)
     lastUsed   DateTime?
     organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
     organizationId String
     revokedAt DateTime?
 
     @@index([organizationId])
+    @@index([type])
+}
+
+enum CredentialType {
+  API
+  MCP
+  MCP_READ_ONLY
+  CLI
+  WEBHOOK
 }
 
 model Invitation {
@@ -96,6 +111,52 @@ model Membership {
   @@index([userId])
 }
 
+model DeprovisioningQueue {
+  id   String  @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  scheduledFor DateTime
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId String
+
+  reason  DeprovisioningReason
+  status  DeprovisioningStatus  @default(PENDING)
+
+  originalScheduledFor DateTime
+  extensionGranted   Boolean  @default(false)
+  extensionReason    String?
+  extendedBy         String?
+
+  notificationsSent   Int  @default(0)
+  lastNotificationAt  DateTime?
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([scheduledFor])
+  @@index([status])
+  @@unique([organizationId, userId])
+}
+
+enum DeprovisioningReason {
+  SUBSCRIPTION_DOWNGRADE
+  SUBSCRIPTION_CANCELLED
+  PLAN_LIMIT_EXCEEDED
+  MANUAL_ADMIN_REQUEST
+}
+
+enum DeprovisioningStatus {
+PENDING
+NOTIFIED_ONCE
+NOTIFIED_REMINDER
+NOTIFIED_FINAL
+COMPLETED
+CANCELED_UPGRADE
+CANCELED_MANUAL
+CANCELED_USER_LEFT
+}
+
 enum MembershipRole {
   MEMBER
   ADMIN
@@ -117,6 +178,9 @@ model User {
   tickets             Ticket[]
   invitesByUser       Invitation[]
   emailChangeTokens   EmailChangeToken[]
+
+
+  createdOrganizations Organization[] @relation("OrganizationCreator")
 }
 
 model EmailChangeToken {
@@ -169,8 +233,12 @@ model Ticket {
   status    TicketStatus @default(OPEN)
   bounty    Int
   deadline  String
-  userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+
+  userId    String?
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+
   comments  Comment[]
   organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId   String

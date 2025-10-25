@@ -1,5 +1,7 @@
 # E2E Testing Guide
 
+**Last Updated:** 2025-10-25
+
 This guide covers how to run and maintain the E2E tests for The Road to Next application.
 
 ## Prerequisites

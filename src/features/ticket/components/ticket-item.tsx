@@ -117,7 +117,7 @@ const TicketItem = ({ticket, isDetail, attachments, comments, referencedTickets}
                 })}>{ticket.content}</span>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                    <p className="text-sm text-muted-foreground">{ticket.deadline} by {ticket.user.username}</p>
+                    <p className="text-sm text-muted-foreground">{ticket.deadline} by {ticket.user?.username || 'Unknown'}</p>
                     <p className="text-sm text-muted-foreground">{toCurrencyFromCent(ticket.bounty)}</p>
                 </CardFooter>
             </Card>

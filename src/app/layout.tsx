@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import {NuqsAdapter} from "nuqs/adapters/next/app";
+import {Footer} from "@/app/_navigation/footer";
 import {SideBar} from "@/app/_navigation/sidebar/components/sidebar";
 import {ReactQueryProvider} from "@/app/_providers/react-query/react-query-provider";
 import {Header} from "@/components/header";
@@ -44,10 +45,11 @@ export default function RootLayout({
           <div className="flex h-screen overflow-hidden border-collapse">
             <SideBar/>
             <main
-                className='min-h-screen flex-1 overflow-y-auto overflow-x-hidden py-24 px-8 bg-secondary/20 flex flex-col '>
+                className='min-h-screen flex-1 overflow-y-auto overflow-x-hidden pt-24 pb-16 px-8 bg-secondary/20 flex flex-col '>
               {children}
             </main>
           </div>
+          <Footer/>
           <Toaster expand/>
         </ReactQueryProvider>
       </ThemeProvider>

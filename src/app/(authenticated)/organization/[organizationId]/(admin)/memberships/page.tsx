@@ -3,6 +3,7 @@ import {Suspense} from "react";
 import {OrganizationBreadcrumbs} from "@/app/(authenticated)/organization/[organizationId]/(admin)/_navigation/tabs";
 import {Heading} from "@/components/heading";
 import {Spinner} from "@/components/spinner";
+import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import InvitationCreateButton from "@/features/invitation/components/invitation-create-button";
 import {MembershipList} from "@/features/memberships/components/membership-list";
 import {OrganizationRenameButton} from "@/features/organization/components/organization-rename-button";
@@ -16,6 +17,9 @@ type MembershipsPageProps = {
 
 const MembershipsPage = async ({params}: MembershipsPageProps) => {
     const {organizationId} = await params;
+    
+    // Get current user
+    const {user} = await getAuthOrRedirect();
     
     // Get organization for rename button
     const organization = await prisma.organization.findUnique({
@@ -39,7 +43,7 @@ const MembershipsPage = async ({params}: MembershipsPageProps) => {
                      }
             />
             <Suspense fallback={<Spinner />} >
-                <MembershipList organizationId={organizationId} />
+                <MembershipList organizationId={organizationId} currentUserId={user.id} />
             </Suspense>
         </div>
     )

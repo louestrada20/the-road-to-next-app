@@ -11,9 +11,10 @@ import {getMemberships} from "@/features/memberships/queries/get-memberships";
 
 type MembershipListProps = {
     organizationId: string,
+    currentUserId: string,
 }
 
-export const MembershipList = async ({organizationId}: MembershipListProps) => {
+export const MembershipList = async ({organizationId, currentUserId}: MembershipListProps) => {
     const memberships = await getMemberships(organizationId);
 
     if (!memberships) {
@@ -63,7 +64,17 @@ export const MembershipList = async ({organizationId}: MembershipListProps) => {
 
                     return (
                         <TableRow key={membership.frontendId}>
-                            <TableCell>{user.username}</TableCell>
+                            <TableCell>
+                                {user.username}
+                                {membership.userId === currentUserId && (
+                                    <span 
+                                        className="text-xs text-muted-foreground ml-1" 
+                                        title="That's you!"
+                                    >
+                                        (you)
+                                    </span>
+                                )}
+                            </TableCell>
                             <TableCell>{user.email}</TableCell>
                             <TableCell>{format(membership.joinedAt, "yyyy-MM-dd, HH:mm")}</TableCell>
                             <TableCell>{user.emailVerified ? ( <LucideCheck /> ) : (<LucideBan />)}</TableCell>
