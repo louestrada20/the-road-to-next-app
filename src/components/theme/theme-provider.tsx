@@ -10,7 +10,7 @@ const ThemeProvider = ({children}: ThemeProviderProps) => {
             attribute="class" 
             defaultTheme="system" 
             enableSystem
-            themes={['light', 'dark', 'professional', 'system']}
+            themes={['light', 'dark', 'professional', 'ocean-blue', 'sunset-orange', 'system']}
         >
             {children}
         </BaseThemeProvider>

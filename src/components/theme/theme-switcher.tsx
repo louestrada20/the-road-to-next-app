@@ -1,5 +1,5 @@
 "use client"
-import {LucideBriefcase, LucideMonitor, LucideMoon, LucideSun} from "lucide-react";
+import {LucideBriefcase, LucideMonitor, LucideMoon, LucideSun, LucideSunrise, LucideWaves} from "lucide-react";
 import {useTheme} from "next-themes";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
@@ -7,6 +7,8 @@ const themes = [
     { value: 'light', label: 'Light', icon: LucideSun },
     { value: 'dark', label: 'Dark', icon: LucideMoon },
     { value: 'professional', label: 'Professional', icon: LucideBriefcase },
+    { value: 'ocean-blue', label: 'Ocean Blue', icon: LucideWaves },
+    { value: 'sunset-orange', label: 'Sunset Orange', icon: LucideSunrise },
     { value: 'system', label: 'System', icon: LucideMonitor }
 ];
 
@@ -15,7 +17,7 @@ const ThemeSwitcher = () => {
 
     return (
         <Select value={theme} onValueChange={setTheme}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="Select theme" />
             </SelectTrigger>
             <SelectContent>
