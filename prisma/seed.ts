@@ -139,11 +139,11 @@ const createTicketsForOrg = async (organizationId: string, userId: string, count
 const createDeprovisioningScenarios = async (organizationId: string, userIds: string[]) => {
   const now = new Date();
   const stages = [
-    { daysAgo: 0, status: 'NOTIFIED_ONCE', userId: userIds[0] },
-    { daysAgo: 7, status: 'NOTIFIED_REMINDER', userId: userIds[1] },
-    { daysAgo: 13, status: 'NOTIFIED_FINAL', userId: userIds[2] },
-    { daysAgo: 14, status: 'PENDING', userId: userIds[3] }, // Ready to execute
-    { daysAgo: 5, status: 'CANCELED_UPGRADE', userId: userIds[4] },
+    { daysFromNow: 14, status: 'NOTIFIED_ONCE', userId: userIds[0] },
+    { daysFromNow: 7, status: 'NOTIFIED_REMINDER', userId: userIds[1] },
+    { daysFromNow: 1, status: 'NOTIFIED_FINAL', userId: userIds[2] },
+    { daysFromNow: 0, status: 'PENDING', userId: userIds[3] }, // Ready to execute
+    { daysFromNow: 9, status: 'CANCELED_UPGRADE', userId: userIds[4] },
   ];
 
   const entries = stages.map(stage => ({
@@ -151,12 +151,12 @@ const createDeprovisioningScenarios = async (organizationId: string, userIds: st
     userId: stage.userId,
     reason: 'SUBSCRIPTION_DOWNGRADE' as const,
     status: stage.status as "PENDING" | "NOTIFIED_ONCE" | "NOTIFIED_REMINDER" | "NOTIFIED_FINAL" | "COMPLETED",
-    scheduledFor: new Date(now.getTime() - (stage.daysAgo * 24 * 60 * 60 * 1000)),
-    originalScheduledFor: new Date(now.getTime() - (stage.daysAgo * 24 * 60 * 60 * 1000)),
+    scheduledFor: new Date(now.getTime() + (stage.daysFromNow * 24 * 60 * 60 * 1000)),
+    originalScheduledFor: new Date(now.getTime() + (stage.daysFromNow * 24 * 60 * 60 * 1000)),
     notificationsSent: stage.status === 'NOTIFIED_ONCE' ? 1 : 
                       stage.status === 'NOTIFIED_REMINDER' ? 2 : 
                       stage.status === 'NOTIFIED_FINAL' ? 3 : 0,
-    lastNotificationAt: stage.status !== 'PENDING' ? new Date(now.getTime() - (stage.daysAgo * 24 * 60 * 60 * 1000)) : null,
+    lastNotificationAt: stage.status !== 'PENDING' ? new Date(now.getTime() - ((14 - stage.daysFromNow) * 24 * 60 * 60 * 1000)) : null,
   }));
 
   return await prisma.deprovisioningQueue.createMany({ data: entries });
