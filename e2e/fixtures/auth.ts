@@ -56,7 +56,7 @@ export class AuthHelper {
     return cookies.filter(cookie => cookie.name === 'session')
   }
 
-  async setAuthCookies(cookies: any[]) {
+  async setAuthCookies(cookies: Array<{ name: string; value: string; domain?: string; path?: string; expires?: number; httpOnly?: boolean; secure?: boolean; sameSite?: 'Strict' | 'Lax' | 'None' }>) {
     await this.page.context().addCookies(cookies)
   }
 }

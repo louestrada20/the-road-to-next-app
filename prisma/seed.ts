@@ -150,7 +150,7 @@ const createDeprovisioningScenarios = async (organizationId: string, userIds: st
     organizationId,
     userId: stage.userId,
     reason: 'SUBSCRIPTION_DOWNGRADE' as const,
-    status: stage.status as any,
+    status: stage.status as "PENDING" | "NOTIFIED_ONCE" | "NOTIFIED_REMINDER" | "NOTIFIED_FINAL" | "COMPLETED",
     scheduledFor: new Date(now.getTime() - (stage.daysAgo * 24 * 60 * 60 * 1000)),
     originalScheduledFor: new Date(now.getTime() - (stage.daysAgo * 24 * 60 * 60 * 1000)),
     notificationsSent: stage.status === 'NOTIFIED_ONCE' ? 1 : 
@@ -183,13 +183,13 @@ const seed = async () => {
       for (const blob of response.blobs) {
         try {
           await del(blob.url);
-        } catch (error) {
+        } catch {
           // Continue on error
         }
       }
       console.log(`  ✓ Cleaned up ${response.blobs.length} blob files`);
     }
-  } catch (error) {
+  } catch {
     console.log('  ⚠️  Skipping blob cleanup (service not configured)');
   }
 
@@ -463,7 +463,7 @@ const seed = async () => {
       await createDefaultAttachments(mainTickets[0].id);
       await createDefaultAttachments(e2eTickets[0].id);
       console.log('  ✓ Sample attachments created');
-    } catch (error) {
+    } catch {
       console.log('  ⚠️  Skipping attachments (Vercel Blob not configured)');
     }
   }

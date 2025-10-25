@@ -60,11 +60,11 @@ if (!fs.existsSync(cursorDir)) {
 }
 
 // Read existing mcp.json or create new
-let existingConfig: any = { mcpServers: {} };
+let existingConfig: { mcpServers: Record<string, unknown> } = { mcpServers: {} };
 if (fs.existsSync(mcpJsonPath)) {
   try {
     existingConfig = JSON.parse(fs.readFileSync(mcpJsonPath, 'utf-8'));
-  } catch (error) {
+  } catch {
     console.warn('⚠️  Could not parse existing mcp.json, will overwrite');
   }
 }
