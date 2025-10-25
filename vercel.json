@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run vercel-build",
+  "functions": {
+    "app/**/*": {
+      "includeFiles": "node_modules/.prisma/client/**"
+    }
+  }}

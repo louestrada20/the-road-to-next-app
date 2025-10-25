@@ -6,10 +6,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "4mb",
     },
   },
-  serverExternalPackages: ['@prisma/client', 'prisma'],
-  outputFileTracingIncludes: {
-    '/api/**/*': ['./node_modules/.prisma/client/**/*'],
-  },
+  serverExternalPackages: ['@prisma/client'],
   // cacheComponents: true, // Disabled - requires Suspense boundary refactoring
   images: {
     remotePatterns: [
