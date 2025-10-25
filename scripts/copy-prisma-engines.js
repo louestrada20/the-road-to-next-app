@@ -1,6 +1,6 @@
 // This script ensures Prisma Query Engine binaries are available for Vercel deployment
-import { existsSync, mkdirSync, copyFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { copyFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -34,7 +34,7 @@ targetPaths.forEach(targetDir => {
     const targetFile = join(targetDir, engineFile);
     copyFileSync(enginePath, targetFile);
     console.log(`✓ Copied to: ${targetFile}`);
-  } catch (error) {
+  } catch (_error) {
     console.log(`ℹ Could not copy to ${targetDir} (may not be needed)`);
   }
 });

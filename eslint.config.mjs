@@ -40,7 +40,7 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, // Test-specific 
     }]
   }
 }, {
-  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "dist/**", "next-env.d.ts"]
+  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "dist/**", "next-env.d.ts", "scripts/**"]
 }];
 
 export default eslintConfig;
