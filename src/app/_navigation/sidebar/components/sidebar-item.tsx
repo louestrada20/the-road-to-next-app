@@ -9,9 +9,10 @@ type SideBarItemProps = {
     isOpen: boolean;
     navItem: NavItem;
     isActive: boolean;
+    onClick?: () => void;
 }
 
-const SideBarItem = ({isOpen, navItem, isActive}: SideBarItemProps) => {
+const SideBarItem = ({isOpen, navItem, isActive, onClick}: SideBarItemProps) => {
 
 
     return (
@@ -21,7 +22,7 @@ const SideBarItem = ({isOpen, navItem, isActive}: SideBarItemProps) => {
             buttonVariants({variant: "ghost"}),
             "group relative flex h-12 justify-start",
             isActive && "bg-muted font-bold hover:bg-muted"
-        )}>
+        )} onClick={onClick}>
             {navItem.icon}
        
         <span className={cn(

@@ -1,5 +1,5 @@
 "use client"
-import { LucideSquareKanban} from "lucide-react";
+import { LucideSquareKanban, Menu} from "lucide-react";
 import Link from "next/link";
 import {AccountDropdown} from "@/app/_navigation/account-dropdown";
 import {MobileAuthDropdown} from "@/components/mobile-auth-dropdown";
@@ -7,10 +7,12 @@ import {ThemeSwitcher} from "@/components/theme/theme-switcher";
 import {buttonVariants} from "@/components/ui/button";
 import {useAuth} from "@/features/auth/hooks/use-auth";
 import {homePath, signInPath, signUpPath} from "@/paths";
+import {useMobileSidebar} from "@/components/mobile-sidebar-context";
 
 
 const Header =  () => {
 const {user, isFetched} = useAuth();
+const { toggle } = useMobileSidebar();
 
     if (!isFetched) {
         return null;
@@ -42,8 +44,17 @@ const {user, isFetched} = useAuth();
             {/* Mobile-First Two Column Layout */}
             <div className="flex items-center justify-between w-full">
                 
-                {/* Left: Logo */}
+                {/* Left: Hamburger Menu + Logo */}
                 <div className="flex items-center gap-x-2">
+                    {/* Mobile hamburger menu */}
+                    <button
+                        onClick={toggle}
+                        className="sm:hidden p-2 rounded-md hover:bg-muted"
+                        aria-label="Open navigation menu"
+                    >
+                        <Menu className="h-5 w-5" />
+                    </button>
+                    
                     <Link href={homePath()} className={buttonVariants({variant: "ghost", size: "sm"})}>
                         <LucideSquareKanban className="h-5 w-5"/>
                         <h1 className="text-base sm:text-lg font-semibold">
