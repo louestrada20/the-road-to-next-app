@@ -1,16 +1,6 @@
 import { NextRequest } from 'next/server';
-import { resend } from '@/lib/resend';
 
-interface DeploymentContext {
-  projectName: string;
-  error: string;
-  commitSha: string;
-  commitMessage: string;
-  timestamp: string;
-  deploymentUrl?: string;
-}
-
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   // NOTE: This webhook handler is ready for Vercel Pro plan
   // Currently using GitHub Actions approach (free)
   // See docs/vercel-webhook-deployment-monitor.md for Pro plan setup
@@ -24,8 +14,19 @@ export async function POST(request: NextRequest) {
 
   /* UNCOMMENT WHEN UPGRADING TO VERCEL PRO:
   
+  import { resend } from '@/lib/resend';
+
+  interface DeploymentContext {
+    projectName: string;
+    error: string;
+    commitSha: string;
+    commitMessage: string;
+    timestamp: string;
+    deploymentUrl?: string;
+  }
+  
   try {
-    const payload = await request.json();
+    const payload = await _request.json();
     
     // Only handle deployment failures
     if (payload.type !== 'deployment.failed' && payload.type !== 'deployment.error') {
