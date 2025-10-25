@@ -46,14 +46,16 @@ const { toggle } = useMobileSidebar();
                 
                 {/* Left: Hamburger Menu + Logo */}
                 <div className="flex items-center gap-x-2">
-                    {/* Mobile hamburger menu */}
-                    <button
-                        onClick={toggle}
-                        className="sm:hidden p-2 rounded-md hover:bg-muted"
-                        aria-label="Open navigation menu"
-                    >
-                        <Menu className="h-5 w-5" />
-                    </button>
+                    {/* Mobile hamburger menu - only show for authenticated users */}
+                    {user && (
+                        <button
+                            onClick={toggle}
+                            className="sm:hidden p-2 rounded-md hover:bg-muted"
+                            aria-label="Open navigation menu"
+                        >
+                            <Menu className="h-5 w-5" />
+                        </button>
+                    )}
                     
                     <Link href={homePath()} className={buttonVariants({variant: "ghost", size: "sm"})}>
                         <LucideSquareKanban className="h-5 w-5"/>
