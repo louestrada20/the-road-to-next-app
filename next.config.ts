@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     '/api/**/*': ['./node_modules/.prisma/client/**/*'],
     '/app/**/*': ['./node_modules/.prisma/client/**/*'],
   },
-  // cacheComponents: true, // Disabled - requires Suspense boundary refactoring
+  // cacheComponents: true, // TODO: Enable after fixing Suspense boundaries in authenticated routes
   images: {
     remotePatterns: [
       {
