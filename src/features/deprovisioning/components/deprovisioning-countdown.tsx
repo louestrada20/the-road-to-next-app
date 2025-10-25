@@ -20,21 +20,17 @@ export const DeprovisioningCountdown = ({
       const diffMs = scheduled.getTime() - now.getTime();
 
       if (diffMs <= 0) {
-        return "Removal in progress";
+        return "now";
       }
 
-      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
       if (days > 1) {
-        return `${days} days, ${hours} hours`;
+        return `${days} days`;
       } else if (days === 1) {
-        return `1 day, ${hours} hours`;
-      } else if (hours > 0) {
-        return `${hours} hours, ${minutes} minutes`;
+        return "1 day";
       } else {
-        return `${minutes} minutes`;
+        return "today";
       }
     };
 
@@ -43,8 +39,8 @@ export const DeprovisioningCountdown = ({
     // Initial calculation
     updateTime();
 
-    // Update every minute for accurate countdown
-    const interval = setInterval(updateTime, 60000); // Update every minute
+    // Update every hour (no need for minute precision)
+    const interval = setInterval(updateTime, 3600000); // Update every hour
 
     return () => clearInterval(interval);
   }, [scheduledDate]);

@@ -23,6 +23,11 @@ export const DeprovisioningWarningBanner = async ({
 
   const { count, scheduledDate, urgencyLevel, queueEntries } = data;
 
+  // Check if scheduled date has passed
+  const now = new Date();
+  const scheduledDate = new Date(data.scheduledDate);
+  const hasPassed = scheduledDate.getTime() <= now.getTime();
+
   // Determine styling based on urgency
   const config = {
     info: {
@@ -30,21 +35,27 @@ export const DeprovisioningWarningBanner = async ({
       Icon: LucideAlertCircle,
       iconClass: "text-blue-600",
       title: "Plan Downgrade Notice",
-      message: `Your plan has been downgraded. ${count} member${count !== 1 ? "s" : ""} will be removed in`,
+      message: hasPassed 
+        ? `${count} member${count !== 1 ? "s" : ""} are being removed`
+        : `Your plan has been downgraded. ${count} member${count !== 1 ? "s" : ""} will be removed in`,
     },
     warning: {
       bgClass: "bg-orange-50 border-orange-500",
       Icon: LucideAlertTriangle,
       iconClass: "text-orange-600",
       title: "Action Needed!",
-      message: `${count} member${count !== 1 ? "s" : ""} will be removed in`,
+      message: hasPassed 
+        ? `${count} member${count !== 1 ? "s" : ""} are being removed`
+        : `${count} member${count !== 1 ? "s" : ""} will be removed in`,
     },
     critical: {
       bgClass: "bg-red-50 border-red-500",
       Icon: LucideAlertOctagon,
       iconClass: "text-red-600",
       title: "Final Notice!",
-      message: `${count} member${count !== 1 ? "s" : ""} will be removed in`,
+      message: hasPassed 
+        ? `${count} member${count !== 1 ? "s" : ""} are being removed`
+        : `${count} member${count !== 1 ? "s" : ""} will be removed in`,
     },
   }[urgencyLevel];
 
@@ -65,11 +76,16 @@ export const DeprovisioningWarningBanner = async ({
       </div>
       <AlertDescription className="mt-2 space-y-3">
         <div className="text-sm">
-          {config.message}{" "}
-          <DeprovisioningCountdown
-            scheduledDate={scheduledDate}
-            urgencyLevel={urgencyLevel}
-          />
+          {config.message}
+          {!hasPassed && (
+            <>
+              {" "}
+              <DeprovisioningCountdown
+                scheduledDate={scheduledDate}
+                urgencyLevel={urgencyLevel}
+              />
+            </>
+          )}
         </div>
         
         <div className="text-xs text-gray-600">
