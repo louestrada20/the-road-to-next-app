@@ -1,22 +1,34 @@
 "use client"
-import {LucideMoon, LucideSun} from "lucide-react";
+import {LucideBriefcase, LucideMonitor, LucideMoon, LucideSun} from "lucide-react";
 import {useTheme} from "next-themes";
-import {Button} from "@/components/ui/button";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+
+const themes = [
+    { value: 'light', label: 'Light', icon: LucideSun },
+    { value: 'dark', label: 'Dark', icon: LucideMoon },
+    { value: 'professional', label: 'Professional', icon: LucideBriefcase },
+    { value: 'system', label: 'System', icon: LucideMonitor }
+];
 
 const ThemeSwitcher = () => {
     const {theme, setTheme} = useTheme();
 
     return (
-            <Button size="icon" variant="outline" onClick={() => setTheme(theme === "light" ? 'dark' : 'light')}>
-
-               <LucideSun className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
-
-
-
-                <LucideMoon className="h-4 w-4 rotate-0 scale-100 transition-all dark:rotate-90 dark:scale-0" />
-
-                <span className="sr-only">Toggle theme</span>
-            </Button>
+        <Select value={theme} onValueChange={setTheme}>
+            <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Select theme" />
+            </SelectTrigger>
+            <SelectContent>
+                {themes.map(({value, label, icon: Icon}) => (
+                    <SelectItem key={value} value={value}>
+                        <div className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            <span>{label}</span>
+                        </div>
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
     )
 }
 
