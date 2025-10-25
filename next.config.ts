@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "4mb",
     },
   },
+  // cacheComponents: true, // Disabled - requires Suspense boundary refactoring
   images: {
     remotePatterns: [
       {
