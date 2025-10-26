@@ -1,4 +1,5 @@
 import Link from "next/link"
+
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { Heading } from "@/components/heading"
 import { Badge } from "@/components/ui/badge"
@@ -7,6 +8,9 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Separator } from "@/components/ui/separator"
 import { getPublicTickets } from "@/features/ticket/queries/get-public-tickets"
 import { homePath, publicTicketPath, signUpPath } from "@/paths"
+
+// Force dynamic rendering - this page requires database access
+export const dynamic = 'force-dynamic'
 
 const PublicTicketsPage = async () => {
     const { list: tickets, metadata } = await getPublicTickets({

@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
+
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,6 +10,9 @@ import { getAuth } from "@/features/auth/actions/get-auth"
 import { TICKET_ICONS } from "@/features/ticket/constants"
 import { getPublicTicket } from "@/features/ticket/queries/get-public-ticket"
 import { homePath, publicTicketsPath, signInPath, signUpPath } from "@/paths"
+
+// Force dynamic rendering - this page requires database access
+export const dynamic = 'force-dynamic'
 
 type PublicTicketPageProps = {
     params: Promise<{
