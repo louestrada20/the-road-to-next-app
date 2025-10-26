@@ -1,5 +1,4 @@
 import Link from "next/link"
-
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { Heading } from "@/components/heading"
 import { Badge } from "@/components/ui/badge"
