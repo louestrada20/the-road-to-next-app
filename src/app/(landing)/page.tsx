@@ -5,6 +5,9 @@ import { HeroSection } from "@/app/_landing/hero-section"
 import { StatsSection } from "@/app/_landing/stats-section"
 import { TechStackSection } from "@/app/_landing/tech-stack-section"
 
+// Landing page needs database access for stats, so it must be dynamic
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "TicketBounty - Incentivize Bug Fixes With Real Rewards",
   description:
