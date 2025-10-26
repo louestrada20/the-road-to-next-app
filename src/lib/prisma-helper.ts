@@ -16,3 +16,17 @@ export const includeNames = {
     },
 };
 
+export const includeUsernameWithSolver = {
+    user: {
+        select: {
+            username: true,
+        },
+    },
+    solvedBy: {
+        select: {
+            username: true,
+            firstName: true,
+            lastName: true,
+        },
+    },
+};

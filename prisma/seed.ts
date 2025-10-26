@@ -298,7 +298,8 @@ const seed = async () => {
         isActive: true, 
         membershipRole: "MEMBER",
         canUpdateTicket: false,
-        canDeleteTicket: false
+        canDeleteTicket: false,
+        canResolveTickets: false
       },
       { userId: dbUsers[2].id, organizationId: e2eOrg.id, isActive: true, membershipRole: "MEMBER" },
       { userId: dbUsers[3].id, organizationId: e2eOrg.id, isActive: true, membershipRole: "MEMBER" },

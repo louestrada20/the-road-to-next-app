@@ -106,6 +106,7 @@ model Membership {
 
   canDeleteTicket  Boolean   @default(true)
   canUpdateTicket  Boolean   @default(true)
+  canResolveTickets Boolean  @default(true)
   @@id(name: "membershipId", [organizationId, userId])
   @@index([organizationId])
   @@index([userId])
@@ -178,7 +179,7 @@ model User {
   tickets             Ticket[]
   invitesByUser       Invitation[]
   emailChangeTokens   EmailChangeToken[]
-
+  solvedTickets       Ticket[]              @relation("TicketSolver")
 
   createdOrganizations Organization[] @relation("OrganizationCreator")
 }
@@ -234,10 +235,16 @@ model Ticket {
   bounty    Int
   deadline  String
 
-
+  // Ticket creator
   userId    String?
   user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  // Bounty resolution tracking
+  solvedByUserId String?
+  solvedBy       User?     @relation("TicketSolver", fields: [solvedByUserId], references: [id], onDelete: SetNull)
+  solvedAt       DateTime?
+  bountyPaidAt   DateTime?
+  bountyApproved Boolean   @default(false)
 
   comments  Comment[]
   organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -247,6 +254,7 @@ model Ticket {
   referencingTickets Ticket[] @relation("TicketReferences")
 
   @@index([userId])
+  @@index([solvedByUserId])
 }
 
 enum TicketStatus {

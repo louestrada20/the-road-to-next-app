@@ -5,7 +5,7 @@ import {getActiveOrganization} from "@/features/organization/queries/get-active-
 import {getOrganizationsByUser} from "@/features/organization/queries/get-organizations-by-user";
 import {ParsedSearchParams} from "@/features/ticket/search-params";
 import { prisma } from "@/lib/prisma"
-import {includeUsername} from "@/lib/prisma-helper";
+import {includeUsernameWithSolver} from "@/lib/prisma-helper";
 
 export const getTickets = async (userId: string | undefined, byOrganization: boolean, searchParams: ParsedSearchParams ) => {
 
@@ -42,7 +42,7 @@ export const getTickets = async (userId: string | undefined, byOrganization: boo
             orderBy: {
                 [searchParams.sortKey]: searchParams.sortValue
             },
-            include: includeUsername
+            include: includeUsernameWithSolver
         }),
         prisma.ticket.count({
             where,

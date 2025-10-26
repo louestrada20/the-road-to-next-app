@@ -5,6 +5,7 @@ import {Separator} from "@/components/ui/separator";
 import {Attachments} from "@/features/attachments/components/attachments";
 import {Comments} from "@/features/comment/components/comments/comments";   
 import {getComments} from "@/features/comment/queries/get-comments";
+import {BountyResolutionCard} from "@/features/ticket/components/bounty-resolution-card";
 import {TicketItem} from "@/features/ticket/components/ticket-item";
 import {TicketReferences} from "@/features/ticket/components/ticket-references";
 import {getTicket} from "@/features/ticket/queries/get-ticket";
@@ -41,6 +42,7 @@ const TicketPage = async ({params}: TicketPageProps) => {
         <div className="flex animate-fade-in-from-top justify-center">
            <TicketItem ticket={ticket}
                        isDetail
+                       bountyResolution={<BountyResolutionCard ticket={ticket} />}
                        attachments={
                             <Attachments entityId={ticket.id} entity="TICKET" isOwner={ticket.isOwner} />
                        }

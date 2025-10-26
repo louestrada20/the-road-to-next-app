@@ -21,12 +21,13 @@ import {toCurrencyFromCent} from "@/utils/currency";
 type TicketItemProps = {
     ticket: TicketWithMetaData,
     isDetail?: boolean,
+    bountyResolution?: React.ReactNode,
     attachments?: React.ReactNode,
     comments?: React.ReactNode;
     referencedTickets?: React.ReactNode;
 };
 
-const TicketItem = ({ticket, isDetail, attachments, comments, referencedTickets}: TicketItemProps) => {
+const TicketItem = ({ticket, isDetail, bountyResolution, attachments, comments, referencedTickets}: TicketItemProps) => {
 
 // const {user} = await getAuth();
 // const isTicketOwner = isOwner(user, ticket);
@@ -137,6 +138,7 @@ const TicketItem = ({ticket, isDetail, attachments, comments, referencedTickets}
 
         </div>
 
+            {bountyResolution}
             {attachments}
             {referencedTickets}
             {comments}
