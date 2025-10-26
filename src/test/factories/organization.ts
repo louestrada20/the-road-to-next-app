@@ -29,6 +29,7 @@ export const createMockMembership = (
     membershipRole: 'MEMBER',
     canDeleteTicket: true,
     canUpdateTicket: true,
+    canResolveTickets: true,
     ...overrides,
   }
 }
