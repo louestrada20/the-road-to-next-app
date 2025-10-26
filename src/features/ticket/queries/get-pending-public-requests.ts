@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { fromCent } from "@/utils/currency"
+import { toCurrencyFromCent } from "@/utils/currency"
 
 export const getPendingPublicRequests = async (organizationId: string) => {
   const tickets = await prisma.ticket.findMany({
@@ -37,7 +37,7 @@ export const getPendingPublicRequests = async (organizationId: string) => {
 
   return tickets.map(ticket => ({
     ...ticket,
-    bountyFormatted: fromCent(ticket.bounty)
+    bountyFormatted: toCurrencyFromCent(ticket.bounty)
   }))
 }
 

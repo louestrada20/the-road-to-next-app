@@ -1,6 +1,6 @@
 import { PAGE_SIZES } from "@/components/pagination/constants"
 import { prisma } from "@/lib/prisma"
-import { fromCent } from "@/utils/currency"
+import { toCurrencyFromCent } from "@/utils/currency"
 
 type GetPublicTicketsParams = {
   page?: number
@@ -33,7 +33,7 @@ export const getPublicTickets = async (params: GetPublicTicketsParams = {}) => {
   // Build where clause
   const where: {
     isPublic: boolean
-    status: string
+    status: 'OPEN'
     OR?: Array<{title?: {contains: string; mode: 'insensitive'}; content?: {contains: string; mode: 'insensitive'}}>
     organizationId?: string
     bounty?: {gte?: number; lte?: number}
@@ -102,7 +102,7 @@ export const getPublicTickets = async (params: GetPublicTicketsParams = {}) => {
   return {
     list: tickets.map(ticket => ({
       ...ticket,
-      bountyFormatted: fromCent(ticket.bounty)
+      bountyFormatted: toCurrencyFromCent(ticket.bounty)
     })),
     metadata: {
       count,

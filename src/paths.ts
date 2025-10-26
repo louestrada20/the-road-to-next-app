@@ -22,6 +22,8 @@ export const organizationCreatePath = () => "/organization/create";
 export const organizationPath = () => "/organization";
 export const membershipsPath = (organizationId: string) => `/organization/${organizationId}/memberships`;
 export const leaderboardPath = (organizationId: string) => `/organization/${organizationId}/leaderboard`;
+export const publicRequestsPath = (organizationId: string) => `/organization/${organizationId}/public-requests`;
+export const membershipRequestsPath = (organizationId: string) => `/organization/${organizationId}/membership-requests`;
 export const onboardingPath = () => "/onboarding";
 export const selectActiveOrganizationPath = () => "/onboarding/select-active-organization";
 export const invitationsPath = (organizationId: string) => `/organization/${organizationId}/invitations`;

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { fromCent } from "@/utils/currency"
+import { toCurrencyFromCent } from "@/utils/currency"
 
 export const getPublicTicket = async (ticketId: string) => {
   const ticket = await prisma.ticket.findUnique({
@@ -49,7 +49,7 @@ export const getPublicTicket = async (ticketId: string) => {
 
   return {
     ...ticket,
-    bountyFormatted: fromCent(ticket.bounty)
+    bountyFormatted: toCurrencyFromCent(ticket.bounty)
   }
 }
 
