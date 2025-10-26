@@ -20,8 +20,8 @@ describe('selectMembersForRemoval', () => {
   it('should return empty list when under limit', async () => {
     asMockObject(prisma.invitation).findMany.mockResolvedValue([]);
     asMockObject(prisma.membership).findMany.mockResolvedValue([
-      { userId: 'user1', membershipRole: 'ADMIN', joinedAt: new Date(), organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true },
-      { userId: 'user2', membershipRole: 'MEMBER', joinedAt: new Date(), organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false },
+      { userId: 'user1', membershipRole: 'ADMIN', joinedAt: new Date(), organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true, canResolveTickets: true },
+      { userId: 'user2', membershipRole: 'MEMBER', joinedAt: new Date(), organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false, canResolveTickets: true },
     ]);
     asMockObject(prisma.organization).findUnique.mockResolvedValue({ creatorUserId: 'user1', name: 'Test Org', id: 'org1', createdAt: new Date(), updatedAt: new Date(), stripeCustomerId: null });
 
@@ -40,7 +40,7 @@ describe('selectMembersForRemoval', () => {
       { email: 'invite2@example.com', createdAt: new Date(), updatedAt: new Date(), organizationId: 'org1', status: 'PENDING', tokenHash: 'hash2', invitedByUserId: null },
     ]);
     asMockObject(prisma.membership).findMany.mockResolvedValue([
-      { userId: 'user1', membershipRole: 'MEMBER', joinedAt: new Date('2024-01-01'), organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false },
+      { userId: 'user1', membershipRole: 'MEMBER', joinedAt: new Date('2024-01-01'), organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false, canResolveTickets: true },
     ]);
     asMockObject(prisma.organization).findUnique.mockResolvedValue({ creatorUserId: null, name: 'Test Org', id: 'org1', createdAt: new Date(), updatedAt: new Date(), stripeCustomerId: null });
 
@@ -59,8 +59,8 @@ describe('selectMembersForRemoval', () => {
 
     asMockObject(prisma.invitation).findMany.mockResolvedValue([]);
     asMockObject(prisma.membership).findMany.mockResolvedValue([
-      { userId: 'creator', membershipRole: 'ADMIN', joinedAt: oldDate, organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true },
-      { userId: 'new-admin', membershipRole: 'ADMIN', joinedAt: newDate, organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true },
+      { userId: 'creator', membershipRole: 'ADMIN', joinedAt: oldDate, organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true, canResolveTickets: true },
+      { userId: 'new-admin', membershipRole: 'ADMIN', joinedAt: newDate, organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true, canResolveTickets: true },
     ]);
     asMockObject(prisma.organization).findUnique.mockResolvedValue({ creatorUserId: 'creator', name: 'Test Org', id: 'org1', createdAt: new Date(), updatedAt: new Date(), stripeCustomerId: null });
 
@@ -76,7 +76,7 @@ describe('selectMembersForRemoval', () => {
   it('should require manual intervention when only protected admins remain', async () => {
     asMockObject(prisma.invitation).findMany.mockResolvedValue([]);
     asMockObject(prisma.membership).findMany.mockResolvedValue([
-      { userId: 'creator', membershipRole: 'ADMIN', joinedAt: new Date(), organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true },
+      { userId: 'creator', membershipRole: 'ADMIN', joinedAt: new Date(), organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true, canResolveTickets: true },
     ]);
     asMockObject(prisma.organization).findUnique.mockResolvedValue({ creatorUserId: 'creator', name: 'Test Org', id: 'org1', createdAt: new Date(), updatedAt: new Date(), stripeCustomerId: null });
 
@@ -99,10 +99,10 @@ describe('selectMembersForRemoval', () => {
 
     asMockObject(prisma.invitation).findMany.mockResolvedValue([]);
     asMockObject(prisma.membership).findMany.mockResolvedValue([
-      { userId: 'admin', membershipRole: 'ADMIN', joinedAt: dates.oldest, organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true },
-      { userId: 'old-member', membershipRole: 'MEMBER', joinedAt: dates.oldest, organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false },
-      { userId: 'middle-member', membershipRole: 'MEMBER', joinedAt: dates.middle, organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false },
-      { userId: 'new-member', membershipRole: 'MEMBER', joinedAt: dates.newest, organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false },
+      { userId: 'admin', membershipRole: 'ADMIN', joinedAt: dates.oldest, organizationId: 'org1', isActive: true, canDeleteTicket: true, canUpdateTicket: true, canResolveTickets: true },
+      { userId: 'old-member', membershipRole: 'MEMBER', joinedAt: dates.oldest, organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false, canResolveTickets: true },
+      { userId: 'middle-member', membershipRole: 'MEMBER', joinedAt: dates.middle, organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false, canResolveTickets: true },
+      { userId: 'new-member', membershipRole: 'MEMBER', joinedAt: dates.newest, organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false, canResolveTickets: true },
     ]);
     asMockObject(prisma.organization).findUnique.mockResolvedValue({ creatorUserId: 'admin', name: 'Test Org', id: 'org1', createdAt: new Date(), updatedAt: new Date(), stripeCustomerId: null });
 

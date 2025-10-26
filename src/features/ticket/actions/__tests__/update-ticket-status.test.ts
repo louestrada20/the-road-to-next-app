@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { updateTicketStatus } from '../update-ticket-status'
+import { beforeEach,describe, expect, it, vi } from 'vitest'
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect'
 import { prisma } from '@/lib/prisma'
-import { createMockUser, createMockTicket } from '@/test/factories'
+import { createMockTicket,createMockUser } from '@/test/factories'
 import { createMockActiveOrganization, mockAuthContext } from '@/test/helpers'
 import { asMock, asMockObject } from '@/test/types/mocks'
+import { updateTicketStatus } from '../update-ticket-status'
 
 vi.mock('@/features/auth/queries/get-auth-or-redirect')
 vi.mock('@/lib/prisma', () => ({
@@ -135,7 +135,7 @@ describe('updateTicketStatus', () => {
     it('should allow owner to reopen solved ticket', async () => {
       const solvedTicket = {
         ...mockTicket,
-        status: 'DONE',
+        status: 'DONE' as const,
         solvedByUserId: otherUserId,
         solvedAt: new Date(),
         bountyApproved: false,

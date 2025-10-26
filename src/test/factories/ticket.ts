@@ -21,6 +21,10 @@ export const createMockTicket = (
     organizationId,
     createdAt: new Date(),
     updatedAt: new Date(),
+    solvedByUserId: null,
+    solvedAt: null,
+    bountyPaidAt: null,
+    bountyApproved: false,
     ...overrides,
   }
 }

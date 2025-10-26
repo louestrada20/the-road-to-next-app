@@ -47,6 +47,7 @@ describe('upsertTicket', () => {
       membershipRole: 'MEMBER',
       canDeleteTicket: true,
       canUpdateTicket: true,
+      canResolveTickets: true,
     })
   })
 

@@ -1,12 +1,11 @@
 "use client"
 
 import { useActionState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { SubmitButton } from "@/components/form/submit-button"
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { approveBountyPayment } from "@/features/ticket/actions/approve-bounty-payment"
 import { TicketWithMetaData } from "@/features/ticket/types/types"
 import { fromCent } from "@/utils/currency"
@@ -76,13 +75,12 @@ export const BountyResolutionCard = ({ ticket }: BountyResolutionCardProps) => {
                 {!ticket.bountyApproved && ticket.isOwner && (
                     <>
                         <Separator />
-                        <form action={action}>
+                        <form action={action} className="space-y-2">
                             <SubmitButton 
-                                label="Approve Bounty Payment" 
-                                className="w-full"
+                                label="Approve Bounty Payment"
                             />
                             {actionState.status === 'ERROR' && (
-                                <p className="text-sm text-red-600 mt-2">
+                                <p className="text-sm text-red-600">
                                     {actionState.message}
                                 </p>
                             )}

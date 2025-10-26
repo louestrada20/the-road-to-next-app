@@ -11,6 +11,7 @@ export interface MockActiveOrganization extends Organization {
     membershipRole: 'MEMBER' | 'ADMIN'
     canDeleteTicket: boolean
     canUpdateTicket: boolean
+    canResolveTickets: boolean
   }
   _count: {
     memberships: number
@@ -41,6 +42,7 @@ export const createMockActiveOrganization = (userId: string, org?: Partial<Organ
       membershipRole: 'MEMBER',
       canDeleteTicket: true,
       canUpdateTicket: true,
+      canResolveTickets: true,
     },
     _count: {
       memberships: 1

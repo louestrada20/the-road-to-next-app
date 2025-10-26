@@ -42,7 +42,7 @@ export const approveBountyPayment = async (ticketId: string) => {
             }
         });
 
-    } catch (error) {
+    } catch {
         return toActionState("ERROR", "Failed to approve bounty");
     }
 

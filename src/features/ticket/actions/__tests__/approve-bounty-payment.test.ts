@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { approveBountyPayment } from '../approve-bounty-payment'
+import { beforeEach,describe, expect, it, vi } from 'vitest'
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect'
 import { prisma } from '@/lib/prisma'
-import { createMockUser, createMockTicket } from '@/test/factories'
+import { createMockTicket,createMockUser } from '@/test/factories'
 import { createMockActiveOrganization, mockAuthContext } from '@/test/helpers'
 import { asMock, asMockObject } from '@/test/types/mocks'
+import { approveBountyPayment } from '../approve-bounty-payment'
 
 vi.mock('@/features/auth/queries/get-auth-or-redirect')
 vi.mock('@/lib/prisma', () => ({

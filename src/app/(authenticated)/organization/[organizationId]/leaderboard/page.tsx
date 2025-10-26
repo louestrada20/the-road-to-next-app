@@ -1,8 +1,7 @@
-import { notFound } from "next/navigation"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 import { Heading } from "@/components/heading"
-import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import {
     Table,
     TableBody,
