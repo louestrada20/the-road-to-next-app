@@ -40,3 +40,4 @@ const EmailInvitationPage = async ({params}: EmailInvitationPageProps) => {
 
 export default EmailInvitationPage;
 
+

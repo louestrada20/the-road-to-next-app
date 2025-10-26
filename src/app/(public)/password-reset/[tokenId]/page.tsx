@@ -20,3 +20,4 @@ const PasswordResetPage = async ({params}: PasswordResetPageProps) => {
 };
 
 export default PasswordResetPage;
+
