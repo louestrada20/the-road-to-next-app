@@ -16,7 +16,7 @@ type GetPublicTicketsParams = {
 export const getPublicTickets = async (params: GetPublicTicketsParams = {}) => {
   const {
     page = 0,
-    size = 20,
+    size = 25,
     search = '',
     organizationId,
     minBounty,

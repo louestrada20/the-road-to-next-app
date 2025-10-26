@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-
 import { getAuthOrRedirect } from '@/features/auth/queries/get-auth-or-redirect'
 import { prisma } from '@/lib/prisma'
 import { createMockTicket, createMockUser } from '@/test/factories'
 import { createMockActiveOrganization, mockAuthContext } from '@/test/helpers'
 import { asMock, asMockObject } from '@/test/types/mocks'
-
 import { requestTicketPublic } from '../request-ticket-public'
 
 vi.mock('@/features/auth/queries/get-auth-or-redirect')

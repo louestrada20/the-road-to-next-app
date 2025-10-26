@@ -11,7 +11,7 @@ import { homePath, publicTicketPath, signUpPath } from "@/paths"
 const PublicTicketsPage = async () => {
     const { list: tickets, metadata } = await getPublicTickets({
         page: 0,
-        size: 20,
+        size: 25,
         sortBy: 'bounty',
         sortOrder: 'desc'
     })
