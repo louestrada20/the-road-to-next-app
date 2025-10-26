@@ -82,6 +82,10 @@ model Invitation {
   invitedByUser   User?            @relation(fields: [invitedByUserId], references: [id], onDelete: SetNull)
   invitedByUserId String?
   status          InvitationStatus @default(PENDING)
+  
+  // Track ticket that prompted membership request
+  requestedFromTicketId String?
+  requestedFromTicket   Ticket? @relation("InvitationFromTicket", fields: [requestedFromTicketId], references: [id], onDelete: SetNull)
 
   @@id(name: "invitationId", [organizationId, email])
   @@index([organizationId])
@@ -90,6 +94,7 @@ model Invitation {
 enum InvitationStatus {
   PENDING
   ACCEPTED_WITHOUT_ACCOUNT
+  REQUESTED
 }
 
 model Membership {
@@ -180,6 +185,7 @@ model User {
   invitesByUser       Invitation[]
   emailChangeTokens   EmailChangeToken[]
   solvedTickets       Ticket[]              @relation("TicketSolver")
+  publicTicketRequests Ticket[]             @relation("TicketPublicRequester")
 
   createdOrganizations Organization[] @relation("OrganizationCreator")
 }
@@ -246,15 +252,25 @@ model Ticket {
   bountyPaidAt   DateTime?
   bountyApproved Boolean   @default(false)
 
+  // Public visibility (irreversible)
+  isPublic           Boolean   @default(false)
+  publishedAt        DateTime?
+  publicRequestedAt  DateTime?
+  publicRequestedBy  String?
+  publicRequestedByUser User? @relation("TicketPublicRequester", fields: [publicRequestedBy], references: [id], onDelete: SetNull)
+
   comments  Comment[]
   organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId   String
   attachments   Attachment[]
   referencedTickets Ticket[] @relation("TicketReferences")  
   referencingTickets Ticket[] @relation("TicketReferences")
+  invitationRequests Invitation[] @relation("InvitationFromTicket")
 
   @@index([userId])
   @@index([solvedByUserId])
+  @@index([isPublic])
+  @@index([publicRequestedAt])
 }
 
 enum TicketStatus {

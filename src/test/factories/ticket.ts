@@ -25,6 +25,10 @@ export const createMockTicket = (
     solvedAt: null,
     bountyPaidAt: null,
     bountyApproved: false,
+    isPublic: false,
+    publishedAt: null,
+    publicRequestedAt: null,
+    publicRequestedBy: null,
     ...overrides,
   }
 }

@@ -36,8 +36,8 @@ describe('selectMembersForRemoval', () => {
 
   it('should prioritize invitations over members', async () => {
     asMockObject(prisma.invitation).findMany.mockResolvedValue([
-      { email: 'invite1@example.com', createdAt: new Date(), updatedAt: new Date(), organizationId: 'org1', status: 'PENDING', tokenHash: 'hash1', invitedByUserId: null },
-      { email: 'invite2@example.com', createdAt: new Date(), updatedAt: new Date(), organizationId: 'org1', status: 'PENDING', tokenHash: 'hash2', invitedByUserId: null },
+      { email: 'invite1@example.com', createdAt: new Date(), updatedAt: new Date(), organizationId: 'org1', status: 'PENDING', tokenHash: 'hash1', invitedByUserId: null, requestedFromTicketId: null },
+      { email: 'invite2@example.com', createdAt: new Date(), updatedAt: new Date(), organizationId: 'org1', status: 'PENDING', tokenHash: 'hash2', invitedByUserId: null, requestedFromTicketId: null },
     ]);
     asMockObject(prisma.membership).findMany.mockResolvedValue([
       { userId: 'user1', membershipRole: 'MEMBER', joinedAt: new Date('2024-01-01'), organizationId: 'org1', isActive: true, canDeleteTicket: false, canUpdateTicket: false, canResolveTickets: true },
