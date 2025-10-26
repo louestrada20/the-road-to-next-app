@@ -5,6 +5,8 @@ export const pricingPath = () => '/pricing';
 export const ticketsPath = () => '/tickets';
 export const ticketsByOrganizationPath = () => '/tickets/organization';
 
+export const publicTicketsPath = () => '/public-tickets';
+export const publicTicketPath = (ticketId: string) => `/public-tickets/${ticketId}`;
 
 export const ticketPath = (ticketId: string) => `/tickets/${ticketId}`;
 export const ticketEditPath = (ticketId: string) => `/tickets/${ticketId}/edit`;
