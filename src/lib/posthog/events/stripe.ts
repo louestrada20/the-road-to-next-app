@@ -1,7 +1,7 @@
 import 'server-only'
 import { prisma } from '@/lib/prisma'
-import { PostHogClient } from './server'
-import { PostHogEvents, type StripeEventProperties } from './types'
+import { PostHogClient } from '../server'
+import { PostHogEvents, type StripeEventProperties } from '../types'
 
 /**
  * Get admin user (or first user) from an organization for PostHog tracking.

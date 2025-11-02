@@ -3,7 +3,7 @@
 import {redirect} from "next/navigation";
 import { toActionState } from "@/components/form/utils/to-action-state";
 import { getAdminOrRedirect } from "@/features/memberships/queries/get-admin-or-redirect";
-import { trackCheckoutSessionCreated } from "@/lib/posthog/events-stripe";
+import { trackCheckoutSessionCreated } from "@/lib/posthog/events/stripe";
 import {prisma} from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";  
 import {pricingPath, signInPath, subscriptionPath} from "@/paths";

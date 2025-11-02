@@ -7,7 +7,7 @@ import {
   trackSubscriptionCanceled,
   trackSubscriptionCreated,
   trackSubscriptionUpdated,
-} from "@/lib/posthog/events-stripe";
+} from "@/lib/posthog/events/stripe";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 
