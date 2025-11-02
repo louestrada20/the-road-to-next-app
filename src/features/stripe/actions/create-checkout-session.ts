@@ -3,6 +3,7 @@
 import {redirect} from "next/navigation";
 import { toActionState } from "@/components/form/utils/to-action-state";
 import { getAdminOrRedirect } from "@/features/memberships/queries/get-admin-or-redirect";
+import { trackCheckoutSessionCreated } from "@/lib/posthog/events-stripe";
 import {prisma} from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";  
 import {pricingPath, signInPath, subscriptionPath} from "@/paths";
@@ -64,6 +65,19 @@ export const createCheckoutSession = async (organizationId: string | null | unde
         }
 
         sessionUrl = session.url;
+
+        // Track checkout session creation in PostHog (non-blocking)
+        try {
+            await trackCheckoutSessionCreated(organizationId, priceId, {
+                sessionId: session.id,
+                customerId: stripeCustomer.customerId,
+            })
+        } catch (posthogError) {
+            // Don't break checkout flow if PostHog fails
+            if (process.env.NODE_ENV === 'development') {
+                console.error('[PostHog] Failed to track checkout session:', posthogError)
+            }
+        }
         
     } catch (error) {
         console.error('Stripe checkout session creation failed:', error);

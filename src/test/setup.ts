@@ -172,6 +172,73 @@ vi.mock('@/lib/inngest', () => ({
   },
 }))
 
+// Mock PostHog
+vi.mock('posthog-js', () => ({
+  default: {
+    init: vi.fn(),
+    capture: vi.fn(),
+    identify: vi.fn(),
+    reset: vi.fn(),
+    isFeatureEnabled: vi.fn(() => false),
+    onFeatureFlags: vi.fn(),
+  },
+}))
+
+vi.mock('posthog-node', () => ({
+  PostHog: vi.fn().mockImplementation(() => ({
+    capture: vi.fn(() => Promise.resolve()),
+    identify: vi.fn(() => Promise.resolve()),
+    shutdown: vi.fn(() => Promise.resolve()),
+    getAllFlags: vi.fn(() => Promise.resolve({})),
+    isFeatureEnabled: vi.fn(() => Promise.resolve(false)),
+  })),
+}))
+
+vi.mock('@posthog/react', () => ({
+  PostHogProvider: ({ children }: { children: React.ReactNode }) => children,
+  usePostHog: vi.fn(() => ({
+    capture: vi.fn(),
+    identify: vi.fn(),
+    reset: vi.fn(),
+    isFeatureEnabled: vi.fn(() => false),
+  })),
+  useFeatureFlagEnabled: vi.fn(() => false),
+  PostHogFeature: ({ children }: { children: React.ReactNode }) => children,
+}))
+
+// Mock instrumentation-client.ts
+vi.mock('../../instrumentation-client', () => ({}))
+
+// Mock PostHog server client
+vi.mock('@/lib/posthog/server', () => ({
+  PostHogClient: vi.fn(() => ({
+    capture: vi.fn(), // Synchronous, returns void
+    identify: vi.fn(), // Synchronous, returns void
+    shutdown: vi.fn(() => Promise.resolve()),
+    getAllFlags: vi.fn(() => Promise.resolve({})),
+    isFeatureEnabled: vi.fn(() => Promise.resolve(false)),
+  })),
+}))
+
+// Mock PostHog client-side identify
+vi.mock('@/lib/posthog/identify-client', () => ({
+  identifyUser: vi.fn(),
+}))
+
+// Mock PostHog server-side identify
+vi.mock('@/lib/posthog/identify-server', () => ({
+  identifyUserServer: vi.fn(() => Promise.resolve()),
+}))
+
+// Mock PostHog Stripe event tracking
+vi.mock('@/lib/posthog/events-stripe', () => ({
+  trackCheckoutSessionCreated: vi.fn(() => Promise.resolve()),
+  trackSubscriptionCreated: vi.fn(() => Promise.resolve()),
+  trackSubscriptionUpdated: vi.fn(() => Promise.resolve()),
+  trackSubscriptionCanceled: vi.fn(() => Promise.resolve()),
+  trackPaymentFailed: vi.fn(() => Promise.resolve()),
+}))
+
 // Mock environment variables
 process.env.NEXTAUTH_URL = 'http://localhost:3000'
 process.env.DATABASE_URL = 'postgresql://test'

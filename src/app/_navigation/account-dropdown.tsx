@@ -1,5 +1,6 @@
 import { LucideGem, LucideLogOut, LucideUser} from "lucide-react";
 import Link from "next/link";
+import {SignOutButton} from "@/components/sign-out-button";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar";
 import {
     DropdownMenu,
@@ -8,7 +9,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import {signOut} from "@/features/auth/actions/sign-out";
 import {AuthUser} from "@/features/auth/types";
 import {accountPasswordPath, accountProfilePath} from "@/paths";
 import {pricingPath} from "@/paths";
@@ -53,10 +53,10 @@ const AccountDropdown = ({user}: AccountDropdownProps) => {
             
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-                 <form action={signOut}>
+                 <SignOutButton>
                      <LucideLogOut className="mr-2 h-4 w-4" />
                      <button type="submit">Sign Out</button>
-                 </form>
+                 </SignOutButton>
             </DropdownMenuItem>
         </DropdownMenuContent>
         </DropdownMenu>

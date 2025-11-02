@@ -2,22 +2,142 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import * as stripeData from "@/features/stripe/data";
+import {
+  trackPaymentFailed,
+  trackSubscriptionCanceled,
+  trackSubscriptionCreated,
+  trackSubscriptionUpdated,
+} from "@/lib/posthog/events-stripe";
+import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 
 const handleSubscriptionCreated = async (subscription: Stripe.Subscription, eventAt: number) => {
     await stripeData.updateStripeSubscription(subscription, eventAt);
+
+    // Track subscription created in PostHog (non-blocking)
+    try {
+        const stripeCustomer = await prisma.stripeCustomer.findUnique({
+            where: { customerId: subscription.customer as string },
+        });
+
+        if (stripeCustomer) {
+            const productId = subscription.items.data[0]?.price.product as string | undefined;
+            const priceId = subscription.items.data[0]?.price.id as string | undefined;
+
+            await trackSubscriptionCreated(stripeCustomer.organizationId, subscription.id, {
+                productId,
+                priceId,
+                status: subscription.status,
+                customerId: subscription.customer as string,
+            });
+        }
+    } catch (error) {
+        // Don't break webhook flow if PostHog fails
+        if (process.env.NODE_ENV === 'development') {
+            console.error('[PostHog] Failed to track subscription created:', error);
+        }
+    }
 };
 
 const handleSubscriptionUpdate = async (subscription: Stripe.Subscription, eventAt: number) => {
+    // Get old product ID before update
+    const stripeCustomerBefore = await prisma.stripeCustomer.findUnique({
+        where: { customerId: subscription.customer as string },
+    });
+    const oldProductId = stripeCustomerBefore?.productId || null;
+
     await stripeData.updateStripeSubscription(subscription, eventAt);
+
+    // Track subscription updated in PostHog (non-blocking)
+    try {
+        const stripeCustomer = await prisma.stripeCustomer.findUnique({
+            where: { customerId: subscription.customer as string },
+        });
+
+        if (stripeCustomer) {
+            const newProductId = subscription.items.data[0]?.price.product as string | undefined;
+
+            await trackSubscriptionUpdated(
+                stripeCustomer.organizationId,
+                subscription.id,
+                oldProductId,
+                newProductId || null,
+                {
+                    status: subscription.status,
+                    priceId: subscription.items.data[0]?.price.id as string | undefined,
+                    customerId: subscription.customer as string,
+                }
+            );
+        }
+    } catch (error) {
+        // Don't break webhook flow if PostHog fails
+        if (process.env.NODE_ENV === 'development') {
+            console.error('[PostHog] Failed to track subscription updated:', error);
+        }
+    }
 };
 
 const handleSubscriptionDeleted = async (subscription: Stripe.Subscription, eventAt: number) => {
+    // Get old product ID before deletion
+    const stripeCustomerBefore = await prisma.stripeCustomer.findUnique({
+        where: { customerId: subscription.customer as string },
+    });
+    const oldProductId = stripeCustomerBefore?.productId || null;
+
     await stripeData.deleteStripeSubscription(subscription, eventAt);
+
+    // Track subscription canceled in PostHog (non-blocking)
+    try {
+        const stripeCustomer = await prisma.stripeCustomer.findUnique({
+            where: { customerId: subscription.customer as string },
+        });
+
+        if (stripeCustomer) {
+            await trackSubscriptionCanceled(stripeCustomer.organizationId, subscription.id, {
+                oldProductId,
+                customerId: subscription.customer as string,
+            });
+        }
+    } catch (error) {
+        // Don't break webhook flow if PostHog fails
+        if (process.env.NODE_ENV === 'development') {
+            console.error('[PostHog] Failed to track subscription canceled:', error);
+        }
+    }
 };
 
 const handlePaymentFailed = async (invoice: Stripe.Invoice, eventAt: number) => {
     await stripeData.handlePaymentFailure(invoice, eventAt);
+
+    // Track payment failed in PostHog (non-blocking)
+    try {
+        const invoiceWithSubscription = invoice as Stripe.Invoice & { subscription?: string };
+
+        if (invoice.customer && invoiceWithSubscription.subscription) {
+            const stripeCustomer = await prisma.stripeCustomer.findUnique({
+                where: { customerId: invoice.customer as string },
+            });
+
+            if (stripeCustomer && invoice.id) {
+                await trackPaymentFailed(
+                    stripeCustomer.organizationId,
+                    invoice.id,
+                    invoice.amount_due,
+                    {
+                        subscriptionId: invoiceWithSubscription.subscription,
+                        attemptCount: invoice.attempt_count,
+                        currency: invoice.currency || undefined,
+                        customerId: invoice.customer as string,
+                    }
+                );
+            }
+        }
+    } catch (error) {
+        // Don't break webhook flow if PostHog fails
+        if (process.env.NODE_ENV === 'development') {
+            console.error('[PostHog] Failed to track payment failed:', error);
+        }
+    }
 };
 
 const handleSubscriptionPaymentIssue = async (subscription: Stripe.Subscription, eventAt: number) => {

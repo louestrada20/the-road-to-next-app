@@ -15,6 +15,9 @@ export const signOut = async () => {
     await invalidateSession(session.id);
     await deleteSessionCookie();
 
+    // Note: PostHog reset() should be called on client-side after redirect
+    // This is handled in the client component that calls signOut
+
     redirect(signInPath());
 }
 

@@ -5,7 +5,9 @@ import {ActionState, fromErrorToActionState, toActionState} from "@/components/f
 import {setSessionCookie} from "@/features/auth/cookie";
 import {verifyPasswordHash} from "@/features/auth/password";
 import {createSession, generateRandomSessionToken} from "@/features/auth/session";
+import {getActiveOrganization} from "@/features/organization/queries/get-active-organization";
 import { getClientIp } from "@/lib/get-client-ip";
+import {identifyUserServer} from "@/lib/posthog/identify-server";
 import {prisma} from "@/lib/prisma";
 import { limitEmail,limitIp } from "@/lib/rate-limit";
 import { ticketsPath} from "@/paths";
@@ -50,6 +52,14 @@ export const signIn = async (_actionState: ActionState, formData: FormData) => {
         const sessionToken = generateRandomSessionToken();
         const session = await createSession(sessionToken, user.id);
         await setSessionCookie(sessionToken, session.expiresAt);
+
+        // Identify user in PostHog after successful sign-in
+        const activeOrganization = await getActiveOrganization();
+        await identifyUserServer(user.id, {
+            email: user.email,
+            username: user.username,
+            organizationId: activeOrganization?.id,
+        });
 
     } catch (error) {
          return fromErrorToActionState(error, formData)
