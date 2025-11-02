@@ -32,6 +32,11 @@ const techStack = [
     icon: "💳",
   },
   {
+    name: "PostHog",
+    description: "Product analytics, feature flags, and user insights",
+    icon: "📊",
+  },
+  {
     name: "Inngest",
     description: "Background job processing and event handling",
     icon: "⚙️",
