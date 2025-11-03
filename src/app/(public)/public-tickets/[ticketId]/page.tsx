@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { getAuth } from "@/features/auth/actions/get-auth"
+import { TicketViewTracker } from "@/features/ticket/components/ticket-view-tracker"
 import { TICKET_ICONS } from "@/features/ticket/constants"
 import { getPublicTicket } from "@/features/ticket/queries/get-public-ticket"
 import { homePath, publicTicketsPath, signInPath, signUpPath } from "@/paths"
@@ -46,6 +47,11 @@ const PublicTicketPage = async ({ params }: PublicTicketPageProps) => {
 
     return (
         <div className="flex-1 flex flex-col gap-y-8">
+            <TicketViewTracker 
+                ticketId={ticket.id} 
+                organizationId={ticket.organization.id}
+                userId={user?.id}
+            />
             <Breadcrumbs
                 breadcrumbs={[
                     { title: "Home", href: homePath() },

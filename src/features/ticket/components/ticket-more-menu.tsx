@@ -34,7 +34,8 @@ const TicketMoreMenu = ({ticket, trigger}: TicketMoreMenuProps) => {
                     <span>Delete</span>
             </DropdownMenuItem>),
             title: "Are you absolutely sure?",
-            description: "This action cannot be undone. Make sure you understand the consequences."
+            description: "This action cannot be undone. Make sure you understand the consequences.",
+            loadingMessage: "Deleting ticket..."
         }
 
     );

@@ -1,14 +1,15 @@
-
 import {notFound} from "next/navigation";
 import {Breadcrumbs} from "@/components/breadcrumbs";
 import {Separator} from "@/components/ui/separator";
 import {Attachments} from "@/features/attachments/components/attachments";
+import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {Comments} from "@/features/comment/components/comments/comments";   
 import {getComments} from "@/features/comment/queries/get-comments";
 import {BountyResolutionCard} from "@/features/ticket/components/bounty-resolution-card";
 import {PublicRequestButton} from "@/features/ticket/components/public-request-button";
 import {TicketItem} from "@/features/ticket/components/ticket-item";
 import {TicketReferences} from "@/features/ticket/components/ticket-references";
+import {TicketViewTracker} from "@/features/ticket/components/ticket-view-tracker";
 import {getTicket} from "@/features/ticket/queries/get-ticket";
 import {homePath} from "@/paths";
 
@@ -19,6 +20,7 @@ type TicketPageProps = {
 };
 const TicketPage = async ({params}: TicketPageProps) => {
     const { ticketId } = await params;
+    const { user, activeOrganization } = await getAuthOrRedirect();
     const results = await Promise.allSettled([
         getTicket(ticketId),
         getComments(ticketId),
@@ -35,6 +37,11 @@ const TicketPage = async ({params}: TicketPageProps) => {
 
     return (
         <div className=" flex-1 flex flex-col gap-y-8">
+            <TicketViewTracker 
+                ticketId={ticket.id} 
+                organizationId={ticket.organizationId}
+                userId={user.id}
+            />
             <Breadcrumbs breadcrumbs={[
                 {title: "Home", href: homePath()},
                 {title: ticket.title}

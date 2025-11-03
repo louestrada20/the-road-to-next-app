@@ -17,16 +17,18 @@ type UseConfirmDialogProps = {
     trigger: React.ReactElement | ((isPending: boolean) => React.ReactElement);
     title?: string;
     description?: string;
+    loadingMessage?: string;
     onSuccess?: (actionState: ActionState) => void;
 }
 
 const useConfirmDialog = ({
-                           action,
-                           trigger,
-                           onSuccess,
-                           title = "Are you absolutely sure?",
-                           description = "This action cannot be undone. Make sure you understand the consequences."}:
-                           UseConfirmDialogProps) => {
+    action,
+    trigger,
+    onSuccess,
+    title = "Are you absolutely sure?",
+    description = "This action cannot be undone. Make sure you understand the consequences.",
+    loadingMessage = "Processing..."}:
+    UseConfirmDialogProps) => {
     const [actionState, formAction, isPending] = useActionState(action, EMPTY_ACTION_STATE)
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -39,7 +41,7 @@ const useConfirmDialog = ({
     const toastRef = useRef<string  | number | null>(null)
     useEffect(() => {
         if (isPending) {
-            toastRef.current = toast.loading('Deleting...');
+            toastRef.current = toast.loading(loadingMessage);    
         } else if (toastRef.current) {
             toast.dismiss(toastRef.current);
         }
@@ -48,7 +50,7 @@ const useConfirmDialog = ({
                 toast.dismiss(toastRef.current)
             }
         }
-    }, [isPending]);
+    }, [isPending, loadingMessage]);
 
 
 

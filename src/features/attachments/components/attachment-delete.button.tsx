@@ -28,6 +28,7 @@ const AttachmentDeleteButton = ({id, onDeleteAttachment}: AttachmentDeleteButton
                 }
             </Button>
         ),
+        loadingMessage: "Deleting attachment...",
         onSuccess: () => {
             onDeleteAttachment?.(id);
             router.refresh();

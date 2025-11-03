@@ -12,6 +12,7 @@ declare global {
             NEXT_PUBLIC_POSTHOG_HOST?: string;
             POSTHOG_API_KEY?: string;
             POSTHOG_HOST?: string;
+            POSTHOG_DISABLE_TICKET_VIEWED?: string;
         }
     }
 }

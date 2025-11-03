@@ -28,6 +28,7 @@ const MembershipDeleteButton = ({organizationId, userId}: MembershipDeleteButton
                 )}
             </Button>
         ),
+        loadingMessage: "Removing member...",
         onSuccess: () => {
             router.refresh();
         }

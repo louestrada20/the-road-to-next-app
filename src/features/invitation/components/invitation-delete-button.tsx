@@ -27,6 +27,7 @@ const InvitationDeleteButton = ({email, organizationId}: InvitationDeleteButtonP
                 )}
             </Button>
         ),
+        loadingMessage: "Deleting invitation...",
         onSuccess: () => {
             router.refresh();
         }

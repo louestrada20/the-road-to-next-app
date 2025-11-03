@@ -22,6 +22,7 @@ const CommentDeleteButton = ({id, onDeleteComment}: CommentDeleteButtonProps) =>
                 )}
             </Button>
         ),
+        loadingMessage: "Deleting comment...",
         onSuccess: () => onDeleteComment?.(id),
     })
 
