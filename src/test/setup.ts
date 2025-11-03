@@ -231,12 +231,21 @@ vi.mock('@/lib/posthog/identify-server', () => ({
 }))
 
 // Mock PostHog Stripe event tracking
-vi.mock('@/lib/posthog/events-stripe', () => ({
+vi.mock('@/lib/posthog/events/stripe', () => ({
   trackCheckoutSessionCreated: vi.fn(() => Promise.resolve()),
   trackSubscriptionCreated: vi.fn(() => Promise.resolve()),
   trackSubscriptionUpdated: vi.fn(() => Promise.resolve()),
   trackSubscriptionCanceled: vi.fn(() => Promise.resolve()),
   trackPaymentFailed: vi.fn(() => Promise.resolve()),
+}))
+
+// Mock PostHog Ticket event tracking
+vi.mock('@/lib/posthog/events/tickets', () => ({
+  trackTicketCreated: vi.fn(() => Promise.resolve()),
+  trackTicketUpdated: vi.fn(() => Promise.resolve()),
+  trackTicketStatusChanged: vi.fn(() => Promise.resolve()),
+  trackTicketViewed: vi.fn(() => Promise.resolve()),
+  trackTicketDeleted: vi.fn(() => Promise.resolve()),
 }))
 
 // Mock environment variables

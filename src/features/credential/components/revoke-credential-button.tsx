@@ -25,6 +25,7 @@ export const RevokeCredentialButton = ({ organizationId, credentialId }: RevokeC
                  )}
              </Button>
          ),
+         loadingMessage: "Revoking credential...",
          onSuccess: () => {
             router.refresh();
          }

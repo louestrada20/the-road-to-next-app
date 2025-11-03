@@ -26,6 +26,7 @@ const OrganizationDeleteButton = ({organizationId}: OrganizationDeleteButtonProp
                 )}
             </Button>
         ),
+        loadingMessage: "Deleting organization...",
         onSuccess: () => {
             router.refresh();
         }

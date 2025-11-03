@@ -52,7 +52,8 @@ const PublicRequestItem = ({ request, organizationId }: { request: PublicRequest
             </Button>
         ),
         title: "Make Ticket Public?",
-        description: "This action is IRREVERSIBLE. Once public, this ticket will be visible to anyone on the internet and cannot be made private again. The only option to hide sensitive information is to delete the ticket entirely. Are you absolutely sure?"
+        description: "This action is IRREVERSIBLE. Once public, this ticket will be visible to anyone on the internet and cannot be made private again. The only option to hide sensitive information is to delete the ticket entirely. Are you absolutely sure?",
+        loadingMessage: "Approving request..."
     })
 
     const [denyButton, denyDialog] = useConfirmDialog({
@@ -64,7 +65,8 @@ const PublicRequestItem = ({ request, organizationId }: { request: PublicRequest
             </Button>
         ),
         title: "Deny Public Request?",
-        description: "The user will not be notified of the denial."
+        description: "The user will not be notified of the denial.",
+        loadingMessage: "Denying request..."
     })
 
     const requesterName = request.publicRequestedByUser

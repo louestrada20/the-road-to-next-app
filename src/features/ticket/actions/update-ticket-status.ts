@@ -5,9 +5,9 @@ import {revalidatePath} from "next/cache";
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
+import { trackTicketStatusChanged } from "@/lib/posthog/events/tickets";
 import {prisma} from "@/lib/prisma";
 import {ticketsPath} from "@/paths";
-
 export const updateTicketStatus = async (id: string, status: TicketStatus) => {
 
     const {user, activeOrganization} = await getAuthOrRedirect();
@@ -66,6 +66,17 @@ export const updateTicketStatus = async (id: string, status: TicketStatus) => {
                     bountyApproved: false,
                 },
             });
+
+            try {
+                await trackTicketStatusChanged(user.id, ticket.organizationId, {
+                    ticketId: id,
+                    status: TicketStatus.DONE,
+                });
+            } catch (posthogError) {
+                if (process.env.NODE_ENV === "development") {
+                    console.error('[PostHog] Failed to track ticket event:', posthogError);
+                }
+            }
         } else {
             // Only owner can change to other statuses (reopen, in_progress)
             if (!isTicketOwner) {
@@ -82,6 +93,17 @@ export const updateTicketStatus = async (id: string, status: TicketStatus) => {
                 where: { id },
                 data: updateData,
             });
+
+            try {
+                await trackTicketStatusChanged(user.id, ticket.organizationId, {
+                    ticketId: id,
+                    status,
+                });
+            } catch (posthogError) {
+                if (process.env.NODE_ENV === "development") {
+                    console.error('[PostHog] Failed to track ticket event:', posthogError);
+                }
+            }
         }
     } catch (error) {
         return fromErrorToActionState(error)

@@ -11,6 +11,7 @@ export const PostHogEvents = {
   TICKET_CREATED: 'ticket_created',
   TICKET_UPDATED: 'ticket_updated',
   TICKET_VIEWED: 'ticket_viewed',
+  TICKET_DELETED: 'ticket_deleted',
   TICKET_STATUS_CHANGED: 'ticket_status_changed',
 
   // Organization events

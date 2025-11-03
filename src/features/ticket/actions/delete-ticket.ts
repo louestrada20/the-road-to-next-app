@@ -6,6 +6,7 @@ import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
 import {getTicketPermissions} from "@/features/ticket/permissions/get-ticket-permission";
+import { trackTicketDeleted } from "@/lib/posthog/events/tickets";
 import {prisma} from "@/lib/prisma";
 import {ticketsPath} from "@/paths";
 
@@ -35,6 +36,16 @@ export const deleteTicket = async (id: string) => {
         await prisma.ticket.delete({
             where: {id}
         });
+
+        try {
+            await trackTicketDeleted(user.id, ticket.organizationId, {
+                ticketId: id,
+            });
+        } catch (posthogError) {    
+            if (process.env.NODE_ENV === "development") {
+                console.error('[PostHog] Failed to track ticket event:', posthogError);
+            }
+        }
     } catch (error) {
         return fromErrorToActionState(error);
     }

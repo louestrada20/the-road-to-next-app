@@ -8,9 +8,11 @@ import {ActionState, fromErrorToActionState, toActionState} from "@/components/f
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
 import {getTicketPermissions} from "@/features/ticket/permissions/get-ticket-permission";
+import { trackTicketCreated, trackTicketUpdated } from "@/lib/posthog/events/tickets";
 import {prisma} from "@/lib/prisma";
 import { ticketPath, ticketsPath} from "@/paths";
 import {toCent} from "@/utils/currency";
+
 
 const upsertTicketSchema = z.object({
     title: z.string().min(1).max(191),
@@ -63,13 +65,33 @@ const {user, activeOrganization} = await getAuthOrRedirect();
             bounty: toCent(data.bounty),
         }
 
-        await prisma.ticket.upsert({
+      const upsertedTicket = await prisma.ticket.upsert({
             where: {
                 id: id || "",
             },
             update: dbData,
             create: {...dbData, organizationId: activeOrganization!.id},
         })
+
+        try {
+            if (id) {
+                await trackTicketUpdated(user.id, upsertedTicket.organizationId, {
+                    ticketId: id,
+                    hasBounty: data.bounty > 0,
+                    hasDeadline: !!data.deadline,
+                });
+            } else {
+                await trackTicketCreated(user.id, upsertedTicket.organizationId, {
+                    ticketId: upsertedTicket.id,    
+                    hasBounty: data.bounty > 0,
+                    hasDeadline: !!data.deadline,
+                });
+            }
+        } catch (posthogError) {
+            if (process.env.NODE_ENV === "development") {
+                console.error('[PostHog] Failed to track ticket event:', posthogError);
+            }
+        }
     } catch (error) {
         return fromErrorToActionState(error, formData);
     }

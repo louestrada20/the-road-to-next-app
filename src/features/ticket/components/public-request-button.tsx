@@ -32,7 +32,8 @@ export const PublicRequestButton = ({
             </Button>
         ),
         title: "Request Public Visibility?",
-        description: "This will notify organization admins to review your request. If approved, this ticket will become publicly visible and CANNOT be made private again. Make sure there is no sensitive information in this ticket."
+        description: "This will notify organization admins to review your request. If approved, this ticket will become publicly visible and CANNOT be made private again. Make sure there is no sensitive information in this ticket.",
+        loadingMessage: "Requesting public visibility...",
     })
 
     // Only show for ticket owners
