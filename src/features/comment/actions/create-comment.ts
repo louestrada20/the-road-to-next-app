@@ -9,7 +9,9 @@ import * as attachmentService from "@/features/attachments/service";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import * as commentData from "@/features/comment/data";
 import * as ticketService from "@/features/ticket/service";
+import { trackCommentCreated } from "@/lib/posthog/events/comments";
 import {ticketPath} from "@/paths";
+
 const createCommentSchema = z.object({
     content: z.string().min(1).max(1024),
     files: filesSchema,
@@ -59,7 +61,19 @@ export const createComment = async (ticketId: string, _actionState: ActionState,
 
         await ticketService.connectReferencedTicketsViaComment(comment);        
 
-
+        try {
+            await trackCommentCreated(user.id, comment.ticket.organizationId, {
+                commentId: comment.id,
+                ticketId: ticketId,
+                contentLength: content.length,
+                hasAttachments: files.length > 0,
+                attachmentCount: files.length,
+            });
+        } catch (posthogError) {
+            if (process.env.NODE_ENV === "development") {
+                console.error('[PostHog] Failed to track comment created event:', posthogError);
+            }
+        }
     } catch (error) {
         return fromErrorToActionState(error, formData);
     }

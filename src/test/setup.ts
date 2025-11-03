@@ -248,6 +248,30 @@ vi.mock('@/lib/posthog/events/tickets', () => ({
   trackTicketDeleted: vi.fn(() => Promise.resolve()),
 }))
 
+// Mock PostHog Comment event tracking
+vi.mock('@/lib/posthog/events/comments', () => ({
+  trackCommentCreated: vi.fn(() => Promise.resolve()),
+  trackCommentUpdated: vi.fn(() => Promise.resolve()),
+  trackCommentDeleted: vi.fn(() => Promise.resolve()),
+}))
+
+// Mock PostHog Organization event tracking
+vi.mock('@/lib/posthog/events/organization', () => ({
+  trackOrganizationCreated: vi.fn(() => Promise.resolve()),
+  trackOrganizationDeleted: vi.fn(() => Promise.resolve()),
+  trackMembershipCreated: vi.fn(() => Promise.resolve()),
+  trackMembershipDeleted: vi.fn(() => Promise.resolve()),
+  trackMembershipRoleUpdated: vi.fn(() => Promise.resolve()),
+  trackOrganizationSwitched: vi.fn(() => Promise.resolve()),
+  trackPermissionChanged: vi.fn(() => Promise.resolve()),
+}))
+
+// Mock PostHog Attachment event tracking
+vi.mock('@/lib/posthog/events/attachments', () => ({
+  trackAttachmentCreated: vi.fn(() => Promise.resolve()),
+  trackAttachmentDeleted: vi.fn(() => Promise.resolve()),
+}))
+
 // Mock environment variables
 process.env.NEXTAUTH_URL = 'http://localhost:3000'
 process.env.DATABASE_URL = 'postgresql://test'

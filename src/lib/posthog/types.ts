@@ -14,11 +14,23 @@ export const PostHogEvents = {
   TICKET_DELETED: 'ticket_deleted',
   TICKET_STATUS_CHANGED: 'ticket_status_changed',
 
+  // Comment events
+  COMMENT_CREATED: 'comment_created',
+  COMMENT_UPDATED: 'comment_updated',
+  COMMENT_DELETED: 'comment_deleted',
+
   // Organization events
   ORGANIZATION_CREATED: 'organization_created',
+  ORGANIZATION_DELETED: 'organization_deleted',
   MEMBERSHIP_CREATED: 'membership_created',
-  MEMBERSHIP_UPDATED: 'membership_updated',
+  MEMBERSHIP_DELETED: 'membership_deleted',
+  MEMBERSHIP_ROLE_UPDATED: 'membership_role_updated',
+  ORGANIZATION_SWITCHED: 'organization_switched',
   PERMISSION_CHANGED: 'permission_changed',
+
+  // Attachment events
+  ATTACHMENT_CREATED: 'attachment_created',
+  ATTACHMENT_DELETED: 'attachment_deleted',
 
   // Stripe events
   CHECKOUT_SESSION_CREATED: 'checkout_session_created',
@@ -38,6 +50,8 @@ export interface AuthEventProperties {
   email?: string
 }
 
+
+
 /**
  * Properties for ticket events
  */
@@ -50,12 +64,47 @@ export interface TicketEventProperties {
 }
 
 /**
+ * Properties for comment events
+ */
+export interface CommentEventProperties {
+  commentId?: string
+  ticketId?: string
+  organizationId?: string
+  contentLength?: number
+  hasAttachments?: boolean
+  attachmentCount?: number
+}
+
+
+
+/**
+ * Properties for attachment events
+ */
+export interface AttachmentEventProperties {
+  attachmentId?: string
+  entity?: 'TICKET' | 'COMMENT'
+  entityId?: string
+  ticketId?: string        // Always present (direct for tickets, via comment for comments)
+  commentId?: string 
+  organizationId?: string
+  fileName?: string
+  fileSize?: number
+  fileType?: string
+}
+/**
  * Properties for organization events
  */
 export interface OrganizationEventProperties {
   organizationId?: string
-  userId?: string
-  permissionKey?: string
+  userId?: string           // For membership events (target user)
+  invitedUserId?: string    // For membership_created (who joined)
+  removedUserId?: string    // For membership_deleted (who left)
+  membershipRole?: string   // For role updates (MEMBER/ADMIN)
+  oldRole?: string          // For role updates (previous role)
+  newRole?: string          // For role updates (new role)
+  permissionKey?: string    // For permission changes
+  permissionValue?: boolean // For permission changes (true/false)
+  organizationName?: string // For organization_deleted (org is deleted)
 }
 
 /**

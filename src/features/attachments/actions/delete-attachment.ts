@@ -6,12 +6,12 @@ import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
 import {inngest} from "@/lib/inngest";
+import { trackAttachmentDeleted } from "@/lib/posthog/events/attachments";
 import {prisma} from "@/lib/prisma";
 import { deleteFileByBlobUrl } from "@/lib/storage";
 import * as attachmentData from "../data";
 import * as attachmentSubjectDTO from "../dto/attachment-subject-dto";
 import { getAttachmentPath } from "../utils/attachment-helper";
-
 
 export const deleteAttachment = async (id: string) => {
     const {user} = await getAuthOrRedirect();
@@ -63,6 +63,22 @@ export const deleteAttachment = async (id: string) => {
                 blobUrl: attachment.blobUrl || undefined,
             }
         })
+
+                // Track attachment deletion
+                try {
+                    await trackAttachmentDeleted(user.id, subject.organizationId, {
+                        attachmentId: attachment.id,
+                        entity: attachment.entity,
+                        entityId: subject.entityId,
+                        ticketId: subject.ticketId,
+                        commentId: subject.commentId ?? undefined,
+                        fileName: attachment.name,
+                    });
+                } catch (posthogError) {
+                    if (process.env.NODE_ENV === "development") {
+                        console.error('[PostHog] Failed to track attachment event:', posthogError);
+                    }
+                }
 
     } catch (error) {
         return fromErrorToActionState(error);

@@ -4,9 +4,9 @@ import {revalidatePath} from "next/cache";
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAdminOrRedirect} from "@/features/memberships/queries/get-admin-or-redirect";
 import {getMemberships} from "@/features/memberships/queries/get-memberships";
+import { trackMembershipRoleUpdated } from "@/lib/posthog/events/organization";
 import {prisma} from "@/lib/prisma";
 import {membershipsPath} from "@/paths";
-
 type updateMembershipRoleProps = {
     userId: string,
     organizationId: string,
@@ -52,6 +52,17 @@ export const updateMembershipRole = async ({userId, organizationId, membershipRo
                 membershipRole,
             },
         })
+        try {
+            await trackMembershipRoleUpdated(userId, organizationId, {
+                userId: userId,
+                oldRole: targetMembership.membershipRole,
+                newRole: membershipRole,
+            });
+        } catch (posthogError) {
+            if (process.env.NODE_ENV === "development") {
+                console.error('[PostHog] Failed to track organization event:', posthogError);
+            }
+        }
 
     } catch (error) {
         return fromErrorToActionState(error);

@@ -2,8 +2,8 @@
 import { toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {getMemberships} from "@/features/memberships/queries/get-memberships";
+import { trackMembershipDeleted } from "@/lib/posthog/events/organization";
 import {prisma} from "@/lib/prisma";
-
 
 type deleteMembershipProps = {
         organizationId: string,
@@ -60,6 +60,15 @@ export const deleteMembership = async ({organizationId, userId}: deleteMembershi
         }
         );
 
-
+    try {
+        await trackMembershipDeleted(userId, organizationId, {
+            removedUserId: userId,
+            membershipRole: targetMembership.membershipRole,
+        });
+    }   catch (posthogError) {
+        if (process.env.NODE_ENV === "development") {
+            console.error('[PostHog] Failed to track organization event:', posthogError);
+        }
+    }
     return toActionState("SUCCESS", "Membership deleted successfully.");
 }

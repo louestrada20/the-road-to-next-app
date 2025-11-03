@@ -4,11 +4,11 @@ import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-
 import {getAdminOrRedirect} from "@/features/memberships/queries/get-admin-or-redirect";
 import {getOrganizationsByUser} from "@/features/organization/queries/get-organizations-by-user";
 import {inngest} from "@/lib/inngest";
+import { trackOrganizationDeleted } from "@/lib/posthog/events/organization";
 import {prisma} from "@/lib/prisma";
 
-
 export const deleteOrganization = async (organizationId: string) => {
-    await getAdminOrRedirect(organizationId);
+    const {user} = await getAdminOrRedirect(organizationId);
 
     try {
         const organizationsUserBelongsTo = await getOrganizationsByUser();
@@ -38,12 +38,25 @@ export const deleteOrganization = async (organizationId: string) => {
             }
         });
 
+        try {
+            await trackOrganizationDeleted(user.id, organization.id, {
+                organizationId: organization.id,
+                organizationName: organization.name,
+            });
+        } catch (posthogError) {
+            if (process.env.NODE_ENV === "development") {
+                console.error('[PostHog] Failed to track organization event:', posthogError);
+            }
+        }
+
         // Delete the organization (this will cascade delete tickets, attachments, etc.)
         await prisma.organization.delete({
             where: {
                 id: organizationId,
             }
         });
+
+        
 
         // await setCookieByKey("toast", "Organization deleted successfully");
         // possible solution to the success message not showing from action state?

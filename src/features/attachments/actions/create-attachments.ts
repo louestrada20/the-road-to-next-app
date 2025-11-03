@@ -1,11 +1,12 @@
 "use server";
 
-import { AttachmentEntity } from "@prisma/client";  
+import { Attachment, AttachmentEntity } from "@prisma/client";  
 import {revalidatePath} from "next/cache";
 import {z} from "zod";
 import {ActionState,fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
+import { trackAttachmentCreated } from "@/lib/posthog/events/attachments";
 import { filesSchema } from "../schema/files";
 import * as attachmentService from "../service/index"
 import { getAttachmentPath } from "../utils/attachment-helper";
@@ -36,12 +37,38 @@ export const createAttachments = async ( {entityId, entity}: CreateAttachmentsAr
         return toActionState("ERROR", "Not the owner of the subject");
     }
 
+
+    let createdAttachments: Attachment[] = [];
     try {
     const { files } = createAttachmentsSchema.parse({
         files: formData.getAll("files"),
     });
 
-    await attachmentService.createAttachments({files, entity, entityId, subject});
+   createdAttachments = await attachmentService.createAttachments({files, entity, entityId, subject});
+
+     // Track each attachment creation
+     try {
+        for (let i = 0; i < createdAttachments.length; i++) {
+            const attachment = createdAttachments[i];
+            const file = files[i];
+            
+            await trackAttachmentCreated(user.id, subject.organizationId, {
+                attachmentId: attachment.id,
+                entity: entity,
+                entityId: entityId,
+                ticketId: subject.ticketId,
+                commentId: subject.commentId ?? undefined,
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+            });
+        }
+    } catch (posthogError) {
+        if (process.env.NODE_ENV === "development") {
+            console.error('[PostHog] Failed to track attachment event:', posthogError);
+        }
+    }
+
 
     } catch (error) {
         console.error('Create attachments error:', error);

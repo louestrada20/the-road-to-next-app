@@ -6,9 +6,11 @@
 import {redirect} from "next/navigation";
 import {setCookieByKey} from "@/actions/cookies";
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
+import { trackMembershipCreated } from "@/lib/posthog/events/organization";
 import {prisma} from "@/lib/prisma"
 import {signInPath} from "@/paths";
 import {hashToken} from "@/utils/crypto";
+
 
 export const acceptInvitation = async (tokenId: string) => {
     try {
@@ -49,6 +51,16 @@ export const acceptInvitation = async (tokenId: string) => {
                     }
                 })
             ])
+            try {
+                await trackMembershipCreated(user.id, invitation.organizationId, {
+                    invitedUserId: user.id,
+                    membershipRole: "MEMBER",
+                });
+            } catch (posthogError) {
+                if (process.env.NODE_ENV === "development") {
+                    console.error('[PostHog] Failed to track organization event:', posthogError);
+                }
+            }
 
         } else {
 

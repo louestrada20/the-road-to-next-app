@@ -4,9 +4,9 @@ import {revalidatePath} from "next/cache";
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {getOrganizationsByUser} from "@/features/organization/queries/get-organizations-by-user";
+import { trackOrganizationSwitched } from "@/lib/posthog/events/organization";
 import {prisma} from "@/lib/prisma";
 import {organizationPath} from "@/paths";
-
 export const switchOrganization = async (organizationId: string) => {
     const {user}  = await getAuthOrRedirect({
         checkActiveOrganization: false,
@@ -44,7 +44,13 @@ export const switchOrganization = async (organizationId: string) => {
             }
         })
         ])
-
+        try {
+            await trackOrganizationSwitched(user.id, organizationId);
+        } catch (posthogError) {
+            if (process.env.NODE_ENV === "development") {
+                console.error('[PostHog] Failed to track organization event:', posthogError);
+            }
+        }
     } catch (error) {
         return fromErrorToActionState(error);
     }
