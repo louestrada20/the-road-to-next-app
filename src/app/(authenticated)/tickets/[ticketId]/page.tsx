@@ -20,7 +20,7 @@ type TicketPageProps = {
 };
 const TicketPage = async ({params}: TicketPageProps) => {
     const { ticketId } = await params;
-    const { user, activeOrganization } = await getAuthOrRedirect();
+    const { user } = await getAuthOrRedirect();
     const results = await Promise.allSettled([
         getTicket(ticketId),
         getComments(ticketId),
