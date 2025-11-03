@@ -39,7 +39,7 @@ const TicketPage = async ({params}: TicketPageProps) => {
         <div className=" flex-1 flex flex-col gap-y-8">
             <TicketViewTracker 
                 ticketId={ticket.id} 
-                organizationId={activeOrganization!.id}
+                organizationId={ticket.organizationId}
                 userId={user.id}
             />
             <Breadcrumbs breadcrumbs={[
