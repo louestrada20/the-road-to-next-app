@@ -22,6 +22,7 @@
     "test:e2e:report": "playwright show-report",
     "type:test": "tsc -p tsconfig.test.json --noEmit",
     "lint:test": "eslint src/**/*.test.{ts,tsx} src/test/**/*.{ts,tsx} e2e/**/*.spec.ts",
+    "check": "npm run type && npm run type:test && npm run lint",
     "prebuild": "npm run type && npm run type:test",
     "postinstall": "prisma generate",
     "vercel-build": "node scripts/prisma-vercel-build.js && next build",
