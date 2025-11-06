@@ -24,7 +24,7 @@ export default function GlobalError({
             <CardHeader>
               <CardTitle>Something went wrong!</CardTitle>
               <CardDescription>
-                We've been notified of this error and are looking into it.
+                We&apos;ve been notified of this error and are looking into it.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
