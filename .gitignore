@@ -35,6 +35,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 .env
 # vercel
 .vercel
@@ -60,3 +61,5 @@ lambda-build/
 
 # add markdown folder here for docs
 docs/
+# Sentry Config File
+.env.sentry-build-plugin
