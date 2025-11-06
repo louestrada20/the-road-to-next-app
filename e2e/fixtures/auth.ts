@@ -1,8 +1,9 @@
 import { Page } from '@playwright/test'
 
 // Get test credentials from environment
-const TEST_EMAIL = 'test@example.com'
-const TEST_PASSWORD = process.env.ADMIN_PASSWORD || 'password123'
+// E2E test users are seeded with these credentials (see prisma/seed.ts)
+const TEST_EMAIL = 'e2e-admin@e2e.local'
+const TEST_PASSWORD = 'Test123!'
 
 export class AuthHelper {
   constructor(private page: Page) {}

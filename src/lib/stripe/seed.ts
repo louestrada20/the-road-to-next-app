@@ -233,6 +233,7 @@ const seed = async () => {
         subscriptionStatus: subscription.status as "active" | "incomplete" | "incomplete_expired" | "past_due" | "canceled" | "unpaid" | "trialed" | "paused",
         productId: selectedProduct.id,
         priceId: selectedPrice.id,
+        eventAt: Math.floor(Date.now() / 1000), // Initialize with current timestamp for consistency
       },
     });
 

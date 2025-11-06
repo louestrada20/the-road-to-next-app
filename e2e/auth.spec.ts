@@ -1,12 +1,12 @@
 import { expect,test } from '@playwright/test'
 
 // Get test credentials from environment
-const TEST_EMAIL = 'test@example.com'
-const TEST_PASSWORD = process.env.ADMIN_PASSWORD || 'password123'
+// E2E test users are seeded with these credentials (see prisma/seed.ts)
+const TEST_EMAIL = 'e2e-admin@e2e.local'
+const TEST_PASSWORD = 'Test123!'
 
 console.log('=== E2E Test Environment ===')
-// console.log('ADMIN_PASSWORD is set:', !!process.env.ADMIN_PASSWORD)
-// console.log('TEST_PASSWORD:', TEST_PASSWORD)
+console.log('TEST_EMAIL:', TEST_EMAIL)
 console.log('PLAYWRIGHT_BASE_URL:', process.env.PLAYWRIGHT_BASE_URL)
 console.log('===========================')
 
