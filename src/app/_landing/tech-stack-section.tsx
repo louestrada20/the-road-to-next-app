@@ -37,6 +37,11 @@ const techStack = [
     icon: "📊",
   },
   {
+    name: "Sentry",
+    description: "Error monitoring, performance tracking, and observability",
+    icon: "🐛",
+  },
+  {
     name: "Inngest",
     description: "Background job processing and event handling",
     icon: "⚙️",
