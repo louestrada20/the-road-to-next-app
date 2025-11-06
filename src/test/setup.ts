@@ -230,6 +230,21 @@ vi.mock('@/lib/posthog/identify-server', () => ({
   identifyUserServer: vi.fn(() => Promise.resolve()),
 }))
 
+// Mock Sentry - Tests should never send errors to production monitoring
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  addBreadcrumb: vi.fn(),
+  setUser: vi.fn(),
+  setTag: vi.fn(),
+  startSpan: vi.fn((options, callback) => callback()),
+  init: vi.fn(),
+  replayIntegration: vi.fn(() => ({})),
+  prismaIntegration: vi.fn(() => ({})),
+  consoleLoggingIntegration: vi.fn(() => ({})),
+  captureRequestError: vi.fn(),
+}))
+
 // Mock PostHog Stripe event tracking
 vi.mock('@/lib/posthog/events/stripe', () => ({
   trackCheckoutSessionCreated: vi.fn(() => Promise.resolve()),
