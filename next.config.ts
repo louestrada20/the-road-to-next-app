@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: "4mb",
+      allowedOrigins: [
+        "roadtonextpro.com",
+        "www.roadtonextpro.com",
+        "localhost:3000", // for local development
+      ],
     },
   },
   serverExternalPackages: ['@prisma/client', 'prisma'],
