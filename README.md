@@ -200,6 +200,9 @@ npm run dev
 ### Environment Variables
 
 ```env
+# App Configuration
+NEXT_PUBLIC_APP_URL="https://www.yourdomain.com"  # Your canonical domain (production)
+
 # Database
 DATABASE_URL="postgresql://..."
 DIRECT_URL="postgresql://..."
