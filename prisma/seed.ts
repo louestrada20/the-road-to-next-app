@@ -85,7 +85,7 @@ const createUsers = async (passwordHash: string) => {
     // E2E test users with known passwords (fake emails)
     {
       username: "e2e_admin",
-      email: "e2e-admin@e2e.local",
+      email: process.env.E2E_TEST_EMAIL || "e2e-admin@e2e.local",
       firstName: "E2E",
       lastName: "Admin",
       emailVerified: true,
@@ -171,9 +171,24 @@ const seed = async () => {
     throw new Error("ADMIN_PASSWORD is not set in the environment variables.");
   }
 
+  if (!process.env.E2E_TEST_PASSWORD) {
+    throw new Error("E2E_TEST_PASSWORD is not set in the environment variables. Add it to your .env file.");
+  }
+
+  // Production safety check
+  const dbUrl = process.env.DATABASE_URL || '';
+  const isProduction = dbUrl.includes('prod') || dbUrl.includes('vercel') || dbUrl.includes('railway') || dbUrl.includes('planetscale');
+  
+  if (isProduction) {
+    console.warn('\n⚠️  WARNING: You appear to be running seed against a PRODUCTION database!');
+    console.warn('   Database URL contains production indicators.');
+    console.warn('   E2E test accounts with known credentials will be created.');
+    console.warn('   This is a SECURITY RISK if this database is accessible publicly.\n');
+  }
+
   // Create password hashes
   const adminPasswordHash = await hashPassword(process.env.ADMIN_PASSWORD);
-  const e2ePasswordHash = await hashPassword("Test123!");
+  const e2ePasswordHash = await hashPassword(process.env.E2E_TEST_PASSWORD);
 
   // Clean up Vercel Blob attachments
   console.log('  Cleaning up Vercel Blob attachments...');
@@ -207,20 +222,21 @@ const seed = async () => {
   console.log('  Creating users...');
   const dbUsers = await createUsers(adminPasswordHash);
   
-  // Update E2E users with Test123! password
-  const e2eEmails = ['e2e-admin@e2e.local', 'e2e-member@e2e.local', 'e2e-limited@e2e.local'];
+  // Update E2E users with password from environment
+  const e2eTestEmail = process.env.E2E_TEST_EMAIL || 'e2e-admin@e2e.local';
+  const e2eEmails = [e2eTestEmail, 'e2e-member@e2e.local', 'e2e-limited@e2e.local'];
   for (const email of e2eEmails) {
     await prisma.user.update({
       where: { email },
       data: { passwordHash: e2ePasswordHash }
     });
   }
-  console.log(`  ✓ ${dbUsers.length} users created`);
+  console.log(`  ✓ ${dbUsers.length} users created (E2E accounts updated with env credentials)`);
 
   // Find specific users for assignments
   const adminUser = dbUsers.find(u => u.email === 'louestrada31@gmail.com')!;
   const admin2User = dbUsers.find(u => u.email === 'louestrada30@gmail.com')!;
-  const e2eAdminUser = dbUsers.find(u => u.email === 'e2e-admin@e2e.local')!;
+  const e2eAdminUser = dbUsers.find(u => u.email === e2eTestEmail)!;
   const e2eMemberUser = dbUsers.find(u => u.email === 'e2e-member@e2e.local')!;
   const e2eLimitedUser = dbUsers.find(u => u.email === 'e2e-limited@e2e.local')!;
 
@@ -482,7 +498,7 @@ const seed = async () => {
   console.log('\n🚀 Ready for Stripe seed - run: npm run seed:stripe');
   console.log('\n📝 Quick start:');
   console.log('  - Sign in as louestrada31@gmail.com or louestrada30@gmail.com');
-  console.log('  - E2E tests: e2e-admin@e2e.local (password: Test123!)');
+  console.log(`  - E2E tests: ${process.env.E2E_TEST_EMAIL || 'e2e-admin@e2e.local'} (password from E2E_TEST_PASSWORD env)`);
   console.log('  - View deprovisioning stages in "Deprovisioning Demo" org');
   console.log('  - MCP server ready to use');
 };

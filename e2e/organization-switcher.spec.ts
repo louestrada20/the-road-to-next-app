@@ -1,8 +1,13 @@
 import { expect, test } from '@playwright/test'
 
-// Use E2E test credentials (seeded in prisma/seed.ts)
-const TEST_EMAIL = 'e2e-admin@e2e.local'
-const TEST_PASSWORD = 'Test123!'
+// Get test credentials from environment variables
+// These must match the credentials set in your .env file and used by prisma/seed.ts
+const TEST_EMAIL = process.env.E2E_TEST_EMAIL || 'e2e-admin@e2e.local'
+const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || ''
+
+if (!TEST_PASSWORD) {
+  throw new Error('E2E_TEST_PASSWORD environment variable is required for E2E tests')
+}
 
 test.describe('Organization Switcher with Footer Update', () => {
   test.beforeEach(async ({ page }) => {

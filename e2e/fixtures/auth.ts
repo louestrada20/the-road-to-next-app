@@ -1,9 +1,13 @@
 import { Page } from '@playwright/test'
 
-// Get test credentials from environment
-// E2E test users are seeded with these credentials (see prisma/seed.ts)
-const TEST_EMAIL = 'e2e-admin@e2e.local'
-const TEST_PASSWORD = 'Test123!'
+// Get test credentials from environment variables
+// These must match the credentials set in your .env file and used by prisma/seed.ts
+const TEST_EMAIL = process.env.E2E_TEST_EMAIL || 'e2e-admin@e2e.local'
+const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || ''
+
+if (!TEST_PASSWORD) {
+  throw new Error('E2E_TEST_PASSWORD environment variable is required for E2E tests')
+}
 
 export class AuthHelper {
   constructor(private page: Page) {}
