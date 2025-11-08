@@ -10,6 +10,7 @@ import {
 } from "@/lib/posthog/events/stripe";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import * as Sentry from "@sentry/nextjs";
 
 const handleSubscriptionCreated = async (subscription: Stripe.Subscription, eventAt: number) => {
     await stripeData.updateStripeSubscription(subscription, eventAt);
@@ -140,10 +141,6 @@ const handlePaymentFailed = async (invoice: Stripe.Invoice, eventAt: number) => 
     }
 };
 
-const handleSubscriptionPaymentIssue = async (subscription: Stripe.Subscription, eventAt: number) => {
-    await stripeData.updateStripeSubscription(subscription, eventAt);
-};
-
 export async function POST(req: Request) {
     const body = await req.text();
     const signature = ((await headers()).get("Stripe-Signature"));
@@ -159,8 +156,17 @@ export async function POST(req: Request) {
 
     let event: Stripe.Event | null = null;
 
+ 
+
     try {
         event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+
+        Sentry.addBreadcrumb({
+            category: "stripe.webhook",
+            message: `Processing ${event.type} event`,
+            level: "info",
+            data: { eventId: event.id}
+        })
 
         switch (event.type) {
             case "customer.subscription.created":
@@ -175,20 +181,114 @@ export async function POST(req: Request) {
             case "invoice.payment_failed":
                 await handlePaymentFailed(event.data.object, event.created);
                 break;
-            case "customer.subscription.updated":
-                // Handle subscription status changes (incomplete, past_due, etc.)
-                const subscription = event.data.object as Stripe.Subscription;
-                if (['incomplete', 'incomplete_expired', 'past_due', 'unpaid'].includes(subscription.status)) {
-                    await handleSubscriptionPaymentIssue(subscription, event.created);
-                }
-                break;
             default:
                 console.log(`Unhandled event type ${event.type}`);
         }
 
         return new NextResponse(null, { status: 200 });
     } catch (error) {
-        console.error('Error processing webhook:', error instanceof Error ? error.message : 'Unknown error');
-        return new NextResponse("Invalid Stripe Signature", { status: 400 });
+
+         // Determine error type for proper handling
+    const isSignatureError = error instanceof Error && 
+    error.message.includes('signature');
+
+        // Try to extract customer/organization info even on error
+        let customerId: string | undefined;
+        let organizationId: string | undefined;
+        let subscriptionInfo: any = {};
+
+        // ADD THIS BLOCK (the missing lookup code):
+if (event?.data?.object) {
+    try {
+        const data = event.data.object as any;
+        customerId = data.customer || data.subscription?.customer;
+        
+        if (customerId) {
+            const stripeCustomer = await prisma.stripeCustomer.findUnique({
+                where: { customerId },
+                select: { 
+                    organizationId: true, 
+                    productId: true, 
+                    subscriptionStatus: true 
+                }
+            });
+            
+            if (stripeCustomer) {
+                organizationId = stripeCustomer.organizationId;
+                subscriptionInfo = {
+                    productId: stripeCustomer.productId,
+                    status: stripeCustomer.subscriptionStatus,
+                };
+            }
+        }
+    } catch (lookupError) {
+        console.error('Failed to lookup customer context:', lookupError);
+    }
+}
+
+
+       // Extract customer info lookup into separate variable for clarity
+const customerContext = {
+    lookupAttempted: !!customerId,
+    lookupSucceeded: !!organizationId,
+    customerId: customerId || null,
+    organizationId: organizationId || null,
+};
+
+Sentry.captureException(error, {
+    level: isSignatureError ? "warning" : "error",
+    tags: {
+        // Core tags - always present for filtering
+        webhook: "stripe",
+        errorType: isSignatureError ? "signature_invalid" : "handler_failed",
+        eventType: event?.type || "event_unavailable",
+        
+        // Context tags - only if meaningful data exists
+        ...(customerId && { customerId }),
+        ...(organizationId && { organizationId }),
+        ...(event?.livemode !== undefined && { 
+            livemode: event.livemode ? "production" : "test" // More descriptive
+        }),
+    },
+    contexts: {
+        stripe_event: {
+            id: event?.id ?? null, // Use ?? for null coalescing
+            type: event?.type ?? null,
+            api_version: event?.api_version ?? null,
+            created: event?.created ?? null,
+            request_id: event?.request?.id ?? null,
+            idempotency_key: event?.request?.idempotency_key ?? null,
+        },
+        customer: customerContext, // Clear structure
+        subscription: Object.keys(subscriptionInfo).length > 0 
+            ? subscriptionInfo 
+            : { available: false }, // Explicit unavailability
+        request: {
+            has_signature: !!signature,
+            body_size: body.length,
+        }
+    },
+    fingerprint: [
+        'stripe-webhook',
+        event?.type || 'unknown-type',
+        isSignatureError ? 'signature-error' : 'handler-error'
+    ]
+});
+
+       
+        console.error('Error processing webhook:', {
+            eventType: event?.type,
+            eventId: event?.id,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            customerId,
+            organizationId,
+        });
+    
+        // Return appropriate status code
+        if (isSignatureError) {
+            return new NextResponse("Invalid Stripe Signature", { status: 400 });
+        }
+
+        return new NextResponse("Webhook Handler Failed", { status: 500 });
     }
 }
