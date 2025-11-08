@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -10,7 +11,6 @@ import {
 } from "@/lib/posthog/events/stripe";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import * as Sentry from "@sentry/nextjs";
 
 const handleSubscriptionCreated = async (subscription: Stripe.Subscription, eventAt: number) => {
     await stripeData.updateStripeSubscription(subscription, eventAt);
