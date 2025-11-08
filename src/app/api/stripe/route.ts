@@ -195,12 +195,21 @@ export async function POST(req: Request) {
         // Try to extract customer/organization info even on error
         let customerId: string | undefined;
         let organizationId: string | undefined;
-        let subscriptionInfo: any = {};
+        let subscriptionInfo: {
+            productId?: string | null;
+            status?: string | null;
+        } = {};
 
         // ADD THIS BLOCK (the missing lookup code):
 if (event?.data?.object) {
     try {
-        const data = event.data.object as any;
+        // Use a type assertion with a defined interface instead of 'any'
+        interface StripeEventDataObject {
+            customer?: string;
+            subscription?: { customer?: string };
+            [key: string]: unknown;
+        }
+        const data = event.data.object as unknown as StripeEventDataObject;
         customerId = data.customer || data.subscription?.customer;
         
         if (customerId) {
