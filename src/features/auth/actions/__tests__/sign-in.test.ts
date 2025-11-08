@@ -21,7 +21,8 @@ vi.mock('@/features/auth/session', () => ({
   generateRandomSessionToken: vi.fn()
 }))
 vi.mock('@/features/auth/cookie', () => ({
-  setSessionCookie: vi.fn()
+  setSessionCookie: vi.fn(),
+  SESSION_COOKIE_NAME: 'session',
 }))
 vi.mock('@/lib/get-client-ip', () => ({
   getClientIp: vi.fn().mockResolvedValue('127.0.0.1')
