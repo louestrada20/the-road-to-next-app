@@ -1,5 +1,14 @@
 export const getBaseUrl = () => {
     const environment = process.env.NODE_ENV;
-    const baseUrl = environment === "development" ? "http://localhost:3000" : `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-    return baseUrl;
+    
+    if (environment === "production") {
+        return "https://www.roadtonextpro.com";
+    }
+    
+    if (environment === "development") {
+        return "http://localhost:3000";
+    }
+    
+    // For Vercel preview deployments
+    return `https://${process.env.VERCEL_URL}`;
 }
