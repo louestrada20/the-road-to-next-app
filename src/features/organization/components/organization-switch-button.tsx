@@ -1,4 +1,5 @@
 "use client"
+import {useRouter} from "next/navigation";
 import {useActionState} from "react";
 import {Form} from "@/components/form/form";
 import {EMPTY_ACTION_STATE} from "@/components/form/utils/to-action-state";
@@ -11,10 +12,16 @@ type OrganizationSwitchButtonProps = {
 
 
 const OrganizationSwitchButton = ({organizationId, trigger,}: OrganizationSwitchButtonProps) => {
+    const router = useRouter();
     const [actionState, action ] = useActionState(switchOrganization.bind(null, organizationId), EMPTY_ACTION_STATE);
 
+    const handleSuccess = () => {
+        // Force client-side refresh to update all client components immediately
+        router.refresh();
+    };
+
     return (
-        <Form action={action} actionState={actionState}>{trigger}</Form>
+        <Form action={action} actionState={actionState} onSuccess={handleSuccess}>{trigger}</Form>
     )
 }
 

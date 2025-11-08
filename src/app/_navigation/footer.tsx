@@ -2,7 +2,6 @@
 
 import { LucideBuilding2, LucideRepeat } from "lucide-react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { buttonVariants } from "@/components/ui/button"
 import { useAuth } from "@/features/auth/hooks/use-auth"
@@ -18,7 +17,6 @@ const Footer = () => {
     const { user, isFetched } = useAuth()
     const [activeOrganization, setActiveOrganization] = useState<ActiveOrganization>(null)
     const [isOrgFetched, setIsOrgFetched] = useState(false)
-    const pathname = usePathname()
 
     useEffect(() => {
         const fetchActiveOrganization = async () => {
@@ -32,7 +30,7 @@ const Footer = () => {
         if (isFetched) {
             fetchActiveOrganization()
         }
-    }, [user, isFetched, pathname])
+    }, [user, isFetched])
 
     // Don't render anything if user is not signed in or still fetching
     if (!isFetched || !user || !isOrgFetched) {

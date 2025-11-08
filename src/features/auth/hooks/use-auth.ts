@@ -1,4 +1,3 @@
-import {usePathname} from "next/navigation";
 import {useEffect, useState} from "react";
 import {getAuth} from "@/features/auth/actions/get-auth";
 import {AuthUser} from "@/features/auth/types";
@@ -8,7 +7,6 @@ import {identifyUser} from "@/lib/posthog/identify-client";
 const useAuth = () => {
     const [user, setUser] = useState<AuthUser | null>(null);
     const [isFetched, setIsFetched] = useState(false);
-    const pathName = usePathname();
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -28,7 +26,7 @@ const useAuth = () => {
             }
         }
         fetchUser();
-    }, [pathName]);
+    }, []);
 
     return {user, isFetched};
 }
