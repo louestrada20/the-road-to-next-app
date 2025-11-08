@@ -1,16 +1,23 @@
 import { expect, test } from '@playwright/test'
 
+// Use E2E test credentials (seeded in prisma/seed.ts)
+const TEST_EMAIL = 'e2e-admin@e2e.local'
+const TEST_PASSWORD = 'Test123!'
+
 test.describe('Organization Switcher with Footer Update', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to sign-in page
-    await page.goto('/sign-in')
+    await page.goto('/sign-in', { waitUntil: 'networkidle' })
   })
 
   test('should update footer immediately after switching organization without navigation', async ({ page }) => {
-    // Sign in with test account (admin@admin.com has multiple organizations)
-    await page.fill('input[name="email"]', 'admin@admin.com')
-    await page.fill('input[name="password"]', 'admin')
-    await page.click('button[type="submit"]:has-text("Sign In")')
+    // Sign in with E2E test credentials
+    await page.fill('input[placeholder="Email"]', TEST_EMAIL)
+    await page.fill('input[placeholder="Password"]', TEST_PASSWORD)
+    await Promise.all([
+      page.waitForURL('/tickets', { timeout: 10000 }),
+      page.getByRole('button', { name: /sign in/i }).click()
+    ])
 
     // Wait for redirect to tickets page
     await page.waitForURL('/tickets')
@@ -89,11 +96,13 @@ test.describe('Organization Switcher with Footer Update', () => {
       }
     })
 
-    // Sign in
-    await page.fill('input[name="email"]', 'admin@admin.com')
-    await page.fill('input[name="password"]', 'admin')
-    await page.click('button[type="submit"]:has-text("Sign In")')
-    await page.waitForURL('/tickets')
+    // Sign in with E2E credentials
+    await page.fill('input[placeholder="Email"]', TEST_EMAIL)
+    await page.fill('input[placeholder="Password"]', TEST_PASSWORD)
+    await Promise.all([
+      page.waitForURL('/tickets', { timeout: 10000 }),
+      page.getByRole('button', { name: /sign in/i }).click()
+    ])
 
     // Clear tracked requests
     orgFetchRequests.length = 0
@@ -126,11 +135,13 @@ test.describe('Organization Switcher with Footer Update', () => {
     // This test would require a user with memberships but no active org
     // For now, we'll test the UI element exists
     
-    // Sign in
-    await page.fill('input[name="email"]', 'admin@admin.com')
-    await page.fill('input[name="password"]', 'admin')
-    await page.click('button[type="submit"]:has-text("Sign In")')
-    await page.waitForURL('/tickets')
+    // Sign in with E2E credentials
+    await page.fill('input[placeholder="Email"]', TEST_EMAIL)
+    await page.fill('input[placeholder="Password"]', TEST_PASSWORD)
+    await Promise.all([
+      page.waitForURL('/tickets', { timeout: 10000 }),
+      page.getByRole('button', { name: /sign in/i }).click()
+    ])
 
     // Footer should show organization info
     const footer = page.locator('footer')
@@ -142,11 +153,13 @@ test.describe('Organization Switcher with Footer Update', () => {
   })
 
   test('should render Switch button in footer that links to organization page', async ({ page }) => {
-    // Sign in
-    await page.fill('input[name="email"]', 'admin@admin.com')
-    await page.fill('input[name="password"]', 'admin')
-    await page.click('button[type="submit"]:has-text("Sign In")')
-    await page.waitForURL('/tickets')
+    // Sign in with E2E credentials
+    await page.fill('input[placeholder="Email"]', TEST_EMAIL)
+    await page.fill('input[placeholder="Password"]', TEST_PASSWORD)
+    await Promise.all([
+      page.waitForURL('/tickets', { timeout: 10000 }),
+      page.getByRole('button', { name: /sign in/i }).click()
+    ])
 
     // Footer should have a Switch link
     const footer = page.locator('footer')
@@ -170,11 +183,13 @@ test.describe('Organization Switcher with Footer Update', () => {
   })
 
   test('should handle rapid organization switches correctly', async ({ page }) => {
-    // Sign in
-    await page.fill('input[name="email"]', 'admin@admin.com')
-    await page.fill('input[name="password"]', 'admin')
-    await page.click('button[type="submit"]:has-text("Sign In")')
-    await page.waitForURL('/tickets')
+    // Sign in with E2E credentials
+    await page.fill('input[placeholder="Email"]', TEST_EMAIL)
+    await page.fill('input[placeholder="Password"]', TEST_PASSWORD)
+    await Promise.all([
+      page.waitForURL('/tickets', { timeout: 10000 }),
+      page.getByRole('button', { name: /sign in/i }).click()
+    ])
 
     // Navigate to organization page
     await page.goto('/organization')
