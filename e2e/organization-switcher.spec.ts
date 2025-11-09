@@ -26,10 +26,13 @@ test.describe('Organization Switcher with Footer Update', () => {
 
     // Wait for redirect to tickets page
     await page.waitForURL('/tickets')
+    
+    // Wait for page to fully load (auth + data fetching)
+    await page.waitForLoadState('networkidle')
 
-    // Verify footer exists and shows an organization
+    // Wait for footer to appear (auth must complete first)
     const footer = page.locator('footer')
-    await expect(footer).toBeVisible()
+    await expect(footer).toBeVisible({ timeout: 10000 })
     
     // Get initial organization name from footer
     const initialOrgText = await footer.locator('text=/Active Organization:/').textContent()
@@ -108,6 +111,9 @@ test.describe('Organization Switcher with Footer Update', () => {
       page.waitForURL('/tickets', { timeout: 10000 }),
       page.getByRole('button', { name: /sign in/i }).click()
     ])
+    
+    // Wait for auth and initial load
+    await page.waitForLoadState('networkidle')
 
     // Clear tracked requests
     orgFetchRequests.length = 0
@@ -124,11 +130,11 @@ test.describe('Organization Switcher with Footer Update', () => {
 
     // Navigate back to tickets
     await page.goto('/tickets')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // Footer should be visible on all pages
     const footer = page.locator('footer')
-    await expect(footer).toBeVisible()
+    await expect(footer).toBeVisible({ timeout: 10000 })
 
     // Organization data should be shown without excessive refetching
     // The exact number of requests may vary, but it should NOT be 
@@ -147,10 +153,13 @@ test.describe('Organization Switcher with Footer Update', () => {
       page.waitForURL('/tickets', { timeout: 10000 }),
       page.getByRole('button', { name: /sign in/i }).click()
     ])
+    
+    // Wait for auth and page load
+    await page.waitForLoadState('networkidle')
 
     // Footer should show organization info
     const footer = page.locator('footer')
-    await expect(footer).toBeVisible()
+    await expect(footer).toBeVisible({ timeout: 10000 })
     
     // Should show either an organization name or "No Active Organization"
     const orgText = footer.locator('text=/Active Organization:|No Active Organization/')
@@ -165,9 +174,13 @@ test.describe('Organization Switcher with Footer Update', () => {
       page.waitForURL('/tickets', { timeout: 10000 }),
       page.getByRole('button', { name: /sign in/i }).click()
     ])
+    
+    // Wait for auth and page load
+    await page.waitForLoadState('networkidle')
 
     // Footer should have a Switch link
     const footer = page.locator('footer')
+    await expect(footer).toBeVisible({ timeout: 10000 })
     const switchLink = footer.locator('a:has-text("Switch")')
     await expect(switchLink).toBeVisible()
 
@@ -195,9 +208,13 @@ test.describe('Organization Switcher with Footer Update', () => {
       page.waitForURL('/tickets', { timeout: 10000 }),
       page.getByRole('button', { name: /sign in/i }).click()
     ])
+    
+    // Wait for auth and page load
+    await page.waitForLoadState('networkidle')
 
     // Navigate to organization page
     await page.goto('/organization')
+    await page.waitForLoadState('networkidle')
 
     // Get all switch/activate buttons
     const switchButtons = page.locator('button:has-text("Switch"), button:has-text("Activate")')
@@ -209,6 +226,7 @@ test.describe('Organization Switcher with Footer Update', () => {
     }
 
     const footer = page.locator('footer')
+    await expect(footer).toBeVisible({ timeout: 10000 })
 
     // Switch between first two available organizations rapidly
     for (let i = 0; i < 2; i++) {

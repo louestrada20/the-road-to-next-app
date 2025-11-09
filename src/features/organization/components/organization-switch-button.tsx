@@ -16,8 +16,13 @@ const OrganizationSwitchButton = ({organizationId, trigger,}: OrganizationSwitch
     const [actionState, action ] = useActionState(switchOrganization.bind(null, organizationId), EMPTY_ACTION_STATE);
 
     const handleSuccess = () => {
-        // Force client-side refresh to update all client components immediately
+        // Force client-side refresh to update all server components
         router.refresh();
+        
+        // Dispatch custom event to notify client components (like Footer) to refetch
+        window.dispatchEvent(new CustomEvent('organization-switched', { 
+            detail: { organizationId } 
+        }));
     };
 
     return (

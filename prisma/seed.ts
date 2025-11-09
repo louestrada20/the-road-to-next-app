@@ -175,9 +175,10 @@ const seed = async () => {
     throw new Error("E2E_TEST_PASSWORD is not set in the environment variables. Add it to your .env file.");
   }
 
-  // Production safety check
+  // Environment detection
   const dbUrl = process.env.DATABASE_URL || '';
   const isProduction = dbUrl.includes('prod') || dbUrl.includes('vercel') || dbUrl.includes('railway') || dbUrl.includes('planetscale');
+  const isLocalDev = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
   
   if (isProduction) {
     console.warn('\n⚠️  WARNING: You appear to be running seed against a PRODUCTION database!');
@@ -193,7 +194,12 @@ const seed = async () => {
   // Clean up Vercel Blob attachments
   console.log('  Cleaning up Vercel Blob attachments...');
   try {
-    const response = await list({ prefix: 'attachments/' });
+    // Use environment-specific prefix to avoid deleting production attachments
+    const blobPrefix = isLocalDev ? 'attachments-dev/' : 'attachments/';
+    
+    console.log(`  Using blob prefix: ${blobPrefix} (${isLocalDev ? 'local dev' : 'production'})`);
+    
+    const response = await list({ prefix: blobPrefix });
     if (response.blobs.length > 0) {
       for (const blob of response.blobs) {
         try {
@@ -289,8 +295,9 @@ const seed = async () => {
     ]
   });
 
-  // Deprovisioning Demo - 8 members (5 will be in deprovisioning queue)
-  const deprovMembers = dbUsers.slice(2, 10); // john through pending_verify
+  // Deprovisioning Demo - 7 members (5 will be in deprovisioning queue)
+  // Exclude E2E users (indices 9, 10, 11) from deprovisioning org
+  const deprovMembers = dbUsers.slice(2, 9); // john through pending_verify (indices 2-8)
   await prisma.membership.createMany({
     data: [
       { userId: admin2User.id, organizationId: deprovOrg.id, isActive: true, membershipRole: "ADMIN" },
@@ -372,8 +379,9 @@ const seed = async () => {
     });
   }
 
-  // Write main org token to .env
-  const envPath = path.join(process.cwd(), '.env');
+  // Write main org token to appropriate .env file based on environment
+  const envPath = path.join(process.cwd(), isLocalDev ? '.env.local' : '.env');
+  
   let envContent = '';
   
   if (fs.existsSync(envPath)) {
@@ -391,7 +399,7 @@ const seed = async () => {
   
   fs.writeFileSync(envPath, envContent);
   console.log('  ✓ MCP credentials created');
-  console.log(`  ✓ MCP credential saved to .env`);
+  console.log(`  ✓ MCP credential saved to ${isLocalDev ? '.env.local' : '.env'}`);
 
   // Create tickets
   console.log('  Creating tickets...');

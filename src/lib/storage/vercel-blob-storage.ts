@@ -1,9 +1,18 @@
 import { del, list,put } from "@vercel/blob";
 import { FileMetadata, UploadOptions } from "./types";
 
+// Determine blob prefix based on environment (local dev vs production)
+const getBlobPrefix = () => {
+  const dbUrl = process.env.DATABASE_URL || '';
+  const isLocalDev = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
+  return isLocalDev ? 'attachments-dev/' : 'attachments/';
+};
+
 // Build blob path helpers
-const buildBlobPath = (attachmentId: string, fileName: string) =>
-  `attachments/${attachmentId}/${fileName}`;
+const buildBlobPath = (attachmentId: string, fileName: string) => {
+  const prefix = getBlobPrefix();
+  return `${prefix}${attachmentId}/${fileName}`;
+};
 
 // Main storage functions for Vercel Blob
 export const uploadFileToBlob = async (

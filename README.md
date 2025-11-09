@@ -241,6 +241,77 @@ npm run setup-mcp
 
 The seed script auto-generates the MCP credential token. See `docs/mcp-setup.md` for detailed setup instructions.
 
+## 🐳 Local Development Database
+
+This project uses Docker Compose to run PostgreSQL locally for development and testing, keeping your local environment completely separate from production.
+
+### **Quick Start (Recommended):**
+
+```bash
+# Start EVERYTHING in one command
+npm run dev:full
+```
+
+**Starts:** PostgreSQL + Next.js + Prisma Studio + Inngest Dev + Stripe CLI
+
+**Perfect for:** Full-stack development with Stripe testing and background job debugging
+
+---
+
+### **Alternative Modes:**
+
+```bash
+# Lightweight (with Inngest, without Stripe)
+npm run dev:lite
+
+# Minimal (DB + Next.js only, no extras)
+npm run dev:minimal
+
+# Basic Next.js only
+npm run dev
+
+# With pre-flight checks
+npm run dev:check
+```
+
+---
+
+### **Database Management:**
+
+```bash
+# Reset database (fresh start)
+npm run db:reset
+
+# Check status
+npm run db:status
+
+# View logs
+npm run db:logs
+
+# Stop database
+npm run db:stop
+```
+
+---
+
+### **Setup Verification:**
+
+```bash
+# Verify everything is configured correctly
+npm run setup:verify
+```
+
+---
+
+### **Production vs Development:**
+- **Local development**: Uses Docker PostgreSQL via `.env.local` (automatically loaded by Next.js)
+- **Production/Vercel**: Uses Supabase PostgreSQL via `.env` or Vercel environment variables
+- **E2E Tests**: Automatically use local database (configured in `playwright.config.ts`)
+
+**Note**: `.env.local` overrides `.env` during local development, ensuring complete database separation.
+
+**Full guide**: `docs/development-scripts-guide.md`
+
 ## 💻 Development
 
 ### Running Tests

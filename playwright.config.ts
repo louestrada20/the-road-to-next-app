@@ -5,6 +5,8 @@ import dotenv from 'dotenv'
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
+// Load .env.local first (local development database), then .env (fallback)
+dotenv.config({ path: '.env.local' })
 dotenv.config({ path: '.env' })
 
 /**
@@ -81,5 +83,10 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      // Ensure E2E tests use local PostgreSQL database
+      DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/road_to_next_dev',
+      DIRECT_URL: process.env.DIRECT_URL || 'postgresql://postgres:postgres@localhost:5432/road_to_next_dev',
+    },
   },
 })

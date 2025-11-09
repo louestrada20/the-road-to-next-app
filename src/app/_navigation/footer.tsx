@@ -2,6 +2,7 @@
 
 import { LucideBuilding2, LucideRepeat } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { buttonVariants } from "@/components/ui/button"
 import { useAuth } from "@/features/auth/hooks/use-auth"
@@ -15,9 +16,11 @@ type ActiveOrganization = {
 
 const Footer = () => {
     const { user, isFetched } = useAuth()
+    const pathname = usePathname()
     const [activeOrganization, setActiveOrganization] = useState<ActiveOrganization>(null)
     const [isOrgFetched, setIsOrgFetched] = useState(false)
 
+    // Fetch active organization
     useEffect(() => {
         const fetchActiveOrganization = async () => {
             if (user) {
@@ -30,7 +33,23 @@ const Footer = () => {
         if (isFetched) {
             fetchActiveOrganization()
         }
-    }, [user, isFetched])
+    }, [user, isFetched, pathname])
+
+    // Listen for custom organization-switched event to update immediately
+    useEffect(() => {
+        const handleOrganizationSwitch = async () => {
+            if (user) {
+                const org = await getActiveOrganizationClient()
+                setActiveOrganization(org)
+            }
+        }
+
+        window.addEventListener('organization-switched', handleOrganizationSwitch)
+        
+        return () => {
+            window.removeEventListener('organization-switched', handleOrganizationSwitch)
+        }
+    }, [user])
 
     // Don't render anything if user is not signed in or still fetching
     if (!isFetched || !user || !isOrgFetched) {
