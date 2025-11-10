@@ -8,11 +8,20 @@ import {isOwner} from "@/features/auth/utils/is-owner";
 import { trackTicketStatusChanged } from "@/lib/posthog/events/tickets";
 import {prisma} from "@/lib/prisma";
 import {ticketsPath} from "@/paths";
+import * as Sentry from "@sentry/nextjs";
+import { captureSentryError } from "@/lib/sentry/capture-error";
+
 export const updateTicketStatus = async (id: string, status: TicketStatus) => {
 
     const {user, activeOrganization} = await getAuthOrRedirect();
 
     try {
+        Sentry.addBreadcrumb({
+            category: "ticket.action",
+            message: "Updating ticket status",
+            level: "info",
+            data: { ticketId: id, userId: user.id, newStatus: status },
+          });
         const ticket = await prisma.ticket.findUnique({
             where: {
                 id,
@@ -20,6 +29,7 @@ export const updateTicketStatus = async (id: string, status: TicketStatus) => {
         });
 
         if (!ticket) {
+
             return toActionState("ERROR", "Ticket not found");
         }
 
@@ -76,6 +86,13 @@ export const updateTicketStatus = async (id: string, status: TicketStatus) => {
                 if (process.env.NODE_ENV === "development") {
                     console.error('[PostHog] Failed to track ticket event:', posthogError);
                 }
+                captureSentryError(posthogError, {
+                    userId: user.id,
+                    organizationId: activeOrganization!.id,
+                    action: "track-ticket-status-changed",
+                    level: "warning",
+                    tags: { analytics: "posthog" },
+                });
             }
         } else {
             // Only owner can change to other statuses (reopen, in_progress)
@@ -103,9 +120,23 @@ export const updateTicketStatus = async (id: string, status: TicketStatus) => {
                 if (process.env.NODE_ENV === "development") {
                     console.error('[PostHog] Failed to track ticket event:', posthogError);
                 }
+                captureSentryError(posthogError, {
+                    userId: user.id,
+                    organizationId: activeOrganization!.id,
+                    action: "track-ticket-status-changed",
+                    level: "warning",
+                    tags: { analytics: "posthog" },
+                });
             }
         }
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            organizationId: activeOrganization!.id,
+            ticketId: id,
+            action: "update-ticket-status",
+            level: "error",
+        });
         return fromErrorToActionState(error)
     }
 

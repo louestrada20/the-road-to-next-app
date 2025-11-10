@@ -1,8 +1,21 @@
 {
   "mcpServers": {
-    "next-devtools": {
+    "roadtonext-ticketing": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "next-devtools-mcp@latest"]
+      "args": [
+        "tsx",
+        "./src/mcp-server-ticketing/index.ts"
+      ],
+      "env": {
+        "DATABASE_URL": "postgresql://postgres.tdepyhbadjdbrbwxrmtm:bUDdFmdt410W0hAR@aws-0-us-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true",
+        "DIRECT_URL": "postgresql://postgres.tdepyhbadjdbrbwxrmtm:bUDdFmdt410W0hAR@aws-0-us-west-1.pooler.supabase.com:5432/postgres",
+        "MCP_CREDENTIAL_TOKEN": "h4axhf5ijhpkwgrw64zowt46a3rjrkih"
+      }
+    },
+    "rive": {
+      "type": "sse",
+      "url": "http://localhost:9791/sse"
     }
   }
 }

@@ -13,6 +13,11 @@ export const PostHogEvents = {
   TICKET_VIEWED: 'ticket_viewed',
   TICKET_DELETED: 'ticket_deleted',
   TICKET_STATUS_CHANGED: 'ticket_status_changed',
+  TICKET_MADE_PUBLIC: 'ticket_made_public',
+  TICKET_PUBLIC_DENIED: 'ticket_public_denied',
+  TICKET_PUBLIC_REQUESTED: 'ticket_public_requested',
+  TICKET_BOUNTY_APPROVED: 'ticket_bounty_approved',
+
 
   // Comment events
   COMMENT_CREATED: 'comment_created',
@@ -61,6 +66,14 @@ export interface TicketEventProperties {
   hasBounty?: boolean
   hasDeadline?: boolean
   status?: string
+  approvedByUserId?: string
+  requestedByUserId?: string
+  deniedByUserId?: string
+  solvedByUserId?: string
+  daysSinceTicketCreated?: number
+  bountyAmount?: number
+  bountyPaidAt?: string
+  bountyApprovedAt?: string
 }
 
 /**

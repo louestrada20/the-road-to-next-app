@@ -9,11 +9,20 @@ import {getTicketPermissions} from "@/features/ticket/permissions/get-ticket-per
 import { trackTicketDeleted } from "@/lib/posthog/events/tickets";
 import {prisma} from "@/lib/prisma";
 import {ticketsPath} from "@/paths";
+import * as Sentry from "@sentry/nextjs";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 
 export const deleteTicket = async (id: string) => {
     const {user} = await getAuthOrRedirect();
 
+    let organizationId: string | undefined;
     try {
+        Sentry.addBreadcrumb({
+            category: "ticket.action",
+            message: "Deleting ticket",
+            level: "info",
+            data: { ticketId: id, userId: user.id },
+          });
         const ticket = await prisma.ticket.findUnique({
             where: {
                  id,
@@ -23,6 +32,7 @@ export const deleteTicket = async (id: string) => {
             if (!ticket || !isOwner(user, ticket)) {
                 return toActionState("ERROR", "Not authorized");
             }
+            organizationId = ticket.organizationId;
 
             const permissions = await getTicketPermissions({
                 organizationId: ticket.organizationId,
@@ -45,8 +55,22 @@ export const deleteTicket = async (id: string) => {
             if (process.env.NODE_ENV === "development") {
                 console.error('[PostHog] Failed to track ticket event:', posthogError);
             }
+            captureSentryError(posthogError, {
+                userId: user.id,
+                organizationId: ticket.organizationId,
+                action: "track-ticket-deleted",
+                level: "warning",
+                tags: { analytics: "posthog" },
+            });
         }
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            organizationId: organizationId,    
+            ticketId: id,
+            action: "delete-ticket",
+            level: "error",
+        });
         return fromErrorToActionState(error);
     }
 

@@ -12,6 +12,9 @@ import { trackTicketCreated, trackTicketUpdated } from "@/lib/posthog/events/tic
 import {prisma} from "@/lib/prisma";
 import { ticketPath, ticketsPath} from "@/paths";
 import {toCent} from "@/utils/currency";
+import * as Sentry from "@sentry/nextjs";
+import { captureSentryError } from "@/lib/sentry/capture-error";
+
 
 
 const upsertTicketSchema = z.object({
@@ -29,7 +32,16 @@ export const upsertTicket = async (
 
 const {user, activeOrganization} = await getAuthOrRedirect();
 
+
+
     try {
+        Sentry.addBreadcrumb({
+            category: "ticket.action",
+            message: id ? "Updating ticket" : "Creating ticket",
+            level: "info",
+            data: { ticketId: id, userId: user.id },
+          });
+
         if (id) {
             const ticket = await prisma.ticket.findUnique({
                 where: {
@@ -88,11 +100,27 @@ const {user, activeOrganization} = await getAuthOrRedirect();
                 });
             }
         } catch (posthogError) {
+
             if (process.env.NODE_ENV === "development") {
                 console.error('[PostHog] Failed to track ticket event:', posthogError);
             }
+            captureSentryError(posthogError, {
+                userId: user.id,
+                organizationId: activeOrganization!.id,
+                action: "track-ticket-created",
+                level: "warning", // Analytics failure is non-critical
+                tags: { analytics: "posthog" },
+              });
         }
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            organizationId: activeOrganization!.id,
+            ticketId: id,
+            action: "upsert-ticket",
+            level: "error", // Critical business operation
+          });
+          
         return fromErrorToActionState(error, formData);
     }
 

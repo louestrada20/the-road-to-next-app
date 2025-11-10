@@ -6,18 +6,29 @@ import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect"
 import { isOwner } from "@/features/auth/utils/is-owner"
 import { prisma } from "@/lib/prisma"
 import { ticketPath } from "@/paths"
+import * as Sentry from "@sentry/nextjs";
+import { captureSentryError } from "@/lib/sentry/capture-error";
+import { trackTicketPublicRequested } from "@/lib/posthog/events/tickets"
 
 export const requestTicketPublic = async (ticketId: string) => {
     const { user } = await getAuthOrRedirect();
-
+    let organizationId: string | undefined;
     try {
+        Sentry.addBreadcrumb({
+            category: "ticket.action",
+            message: "Requesting ticket public",
+            level: "info",
+            data: { ticketId: ticketId, userId: user.id },
+          });
         const ticket = await prisma.ticket.findUnique({
-            where: { id: ticketId }
+            where: { id: ticketId },
+            select: { isPublic: true, publicRequestedAt: true, userId: true, organizationId: true }
         });
 
         if (!ticket) {
             return toActionState("ERROR", "Ticket not found");
         }
+        organizationId = ticket.organizationId;   
 
         // Only ticket creator can request to make public
         if (!isOwner(user, ticket)) {
@@ -43,7 +54,34 @@ export const requestTicketPublic = async (ticketId: string) => {
             }
         });
 
-    } catch {
+        try {
+            await trackTicketPublicRequested(user.id, organizationId, {
+                ticketId: ticketId,
+                requestedByUserId: user.id,
+            });
+        }
+        catch (posthogError) {
+            if (process.env.NODE_ENV === "development") {
+                console.error('[PostHog] Failed to track ticket event:', posthogError);
+            }
+            captureSentryError(posthogError, {
+                userId: user.id,
+                organizationId: organizationId,
+                ticketId: ticketId,
+                action: "track-ticket-public-requested",
+                level: "warning",
+                tags: { analytics: "posthog" },
+            });
+        }
+
+    } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            organizationId: organizationId, 
+            ticketId: ticketId,
+            action: "request-ticket-public",
+            level: "error",
+        });
         return toActionState("ERROR", "Failed to request public visibility");
     }
 

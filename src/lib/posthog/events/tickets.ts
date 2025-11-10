@@ -81,3 +81,36 @@ export async function trackTicketStatusChanged(
 ): Promise<void> {
     await trackTicketEvent(PostHogEvents.TICKET_STATUS_CHANGED,  {...properties}, userId, organizationId)
 }
+
+export async function trackTicketMadePublic(
+    userId: string,
+    organizationId: string,
+    properties?: Partial<TicketEventProperties>
+): Promise<void> {
+    await trackTicketEvent(PostHogEvents.TICKET_MADE_PUBLIC,  {...properties}, userId, organizationId)
+}
+
+
+export async function trackTicketPublicDenied(
+    userId: string,
+    organizationId: string,
+    properties?: Partial<TicketEventProperties>
+): Promise<void> {
+    await trackTicketEvent(PostHogEvents.TICKET_PUBLIC_DENIED,  {...properties}, userId, organizationId)
+}
+
+export async function trackTicketPublicRequested(
+    userId: string,
+    organizationId: string,
+    properties?: Partial<TicketEventProperties>
+): Promise<void> {
+    await trackTicketEvent(PostHogEvents.TICKET_PUBLIC_REQUESTED,  {...properties}, userId, organizationId)
+}
+
+export async function trackTicketBountyApproved(
+    userId: string,
+    organizationId: string,
+    properties?: Partial<TicketEventProperties>
+): Promise<void> {
+    await trackTicketEvent(PostHogEvents.TICKET_BOUNTY_APPROVED,  {...properties}, userId, organizationId)
+}
