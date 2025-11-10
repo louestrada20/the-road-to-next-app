@@ -1,9 +1,11 @@
 "use server"
+import * as Sentry from "@sentry/nextjs";
 import { toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {getMemberships} from "@/features/memberships/queries/get-memberships";
 import { trackMembershipDeleted } from "@/lib/posthog/events/organization";
 import {prisma} from "@/lib/prisma";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 
 type deleteMembershipProps = {
         organizationId: string,
@@ -12,6 +14,13 @@ type deleteMembershipProps = {
 
 export const deleteMembership = async ({organizationId, userId}: deleteMembershipProps) => {
    const {user} =  await getAuthOrRedirect();
+
+    Sentry.addBreadcrumb({
+        category: "membership.action",
+        message: "Deleting membership",
+        level: "info",
+        data: { userId, organizationId },
+    });
 
     const memberships = await getMemberships(organizationId);
 
@@ -50,6 +59,7 @@ export const deleteMembership = async ({organizationId, userId}: deleteMembershi
         return toActionState("ERROR", "You can only delete memberships as an admin")
     }
 
+    try {
         await prisma.membership.delete({
             where: {
                 membershipId: {
@@ -57,18 +67,34 @@ export const deleteMembership = async ({organizationId, userId}: deleteMembershi
                     userId
                 }
             }
-        }
-        );
-
-    try {
-        await trackMembershipDeleted(userId, organizationId, {
-            removedUserId: userId,
-            membershipRole: targetMembership.membershipRole,
         });
-    }   catch (posthogError) {
-        if (process.env.NODE_ENV === "development") {
-            console.error('[PostHog] Failed to track organization event:', posthogError);
+
+        try {
+            await trackMembershipDeleted(userId, organizationId, {
+                removedUserId: userId,
+                membershipRole: targetMembership.membershipRole,
+            });
+        } catch (posthogError) {
+            if (process.env.NODE_ENV === "development") {
+                console.error('[PostHog] Failed to track organization event:', posthogError);
+            }
+            captureSentryError(posthogError, {
+                userId: user.id,
+                organizationId: organizationId,
+                action: "track-membership-deleted",
+                level: "warning",
+                tags: { analytics: "posthog" },
+            });
         }
+    } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            organizationId: organizationId,
+            action: "delete-membership",
+            level: "error",
+        });
+        return toActionState("ERROR", "Failed to delete membership");
     }
+
     return toActionState("SUCCESS", "Membership deleted successfully.");
 }

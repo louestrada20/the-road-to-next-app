@@ -2,6 +2,7 @@
 
 
 "use server"
+import * as Sentry from "@sentry/nextjs";
 import { redirect } from "next/navigation";
 import {z} from "zod";
 import { setCookieByKey } from "@/actions/cookies";
@@ -11,6 +12,7 @@ import { getClientIp } from "@/lib/get-client-ip";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
 import { limitEmail,limitIp } from "@/lib/rate-limit";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import { emailChangeVerifyPath } from "@/paths";
 
 const changeEmailSchema = z.object({
@@ -18,8 +20,16 @@ const changeEmailSchema = z.object({
 });
 
 export const changeEmail = async (_actionState: ActionState, formData: FormData) => {
+    const {user} = await getAuthOrRedirect();
+
     try {
-        const {user} = await getAuthOrRedirect();
+        Sentry.addBreadcrumb({
+            category: "account.action",
+            message: "Changing email",
+            level: "info",
+            data: { userId: user.id },
+        });
+
         const ip = await getClientIp();
 
         // Rate limiting
@@ -55,22 +65,35 @@ export const changeEmail = async (_actionState: ActionState, formData: FormData)
         });
 
         // Trigger email change event
-        await inngest.send({
-            name: "app/account.email-change",
-            data: {
+        try {
+            await inngest.send({
+                name: "app/account.email-change",
+                data: {
+                    userId: user.id,
+                    currentEmail: user.email,
+                    newEmail: newEmail,
+                    username: user.username
+                }
+            });
+        } catch (inngestError) {
+            captureSentryError(inngestError, {
                 userId: user.id,
-                currentEmail: user.email,
-                newEmail: newEmail,
-                username: user.username
-            }
-        });
+                action: "change-email-send-verification",
+                level: "warning",
+            });
+        }
 
 
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            action: "change-email",
+            level: "error",
+        });
         return fromErrorToActionState(error, formData);
     }
 
-        await setCookieByKey("toast", "Verification email sent to your new email address"); 
+        await setCookieByKey("toast", "Verification email sent to your new email address");
 
     redirect(emailChangeVerifyPath());
 }

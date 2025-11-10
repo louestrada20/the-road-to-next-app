@@ -1,11 +1,13 @@
 "use server"
 import {MembershipRole} from "@prisma/client";
+import * as Sentry from "@sentry/nextjs";
 import {revalidatePath} from "next/cache";
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAdminOrRedirect} from "@/features/memberships/queries/get-admin-or-redirect";
 import {getMemberships} from "@/features/memberships/queries/get-memberships";
 import { trackMembershipRoleUpdated } from "@/lib/posthog/events/organization";
 import {prisma} from "@/lib/prisma";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import {membershipsPath} from "@/paths";
 type updateMembershipRoleProps = {
     userId: string,
@@ -14,7 +16,14 @@ type updateMembershipRoleProps = {
 }
 
 export const updateMembershipRole = async ({userId, organizationId, membershipRole}: updateMembershipRoleProps) => {
-    await getAdminOrRedirect(organizationId);
+    const {user} = await getAdminOrRedirect(organizationId);
+
+    Sentry.addBreadcrumb({
+        category: "membership.action",
+        message: "Updating membership role",
+        level: "info",
+        data: { userId, organizationId, membershipRole },
+    });
 
     const memberships = await getMemberships(organizationId);
 
@@ -62,9 +71,22 @@ export const updateMembershipRole = async ({userId, organizationId, membershipRo
             if (process.env.NODE_ENV === "development") {
                 console.error('[PostHog] Failed to track organization event:', posthogError);
             }
+            captureSentryError(posthogError, {
+                userId: user.id,
+                organizationId: organizationId,
+                action: "track-membership-role-updated",
+                level: "warning",
+                tags: { analytics: "posthog" },
+            });
         }
 
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            organizationId: organizationId,
+            action: "update-membership-role",
+            level: "error",
+        });
         return fromErrorToActionState(error);
     }
 

@@ -2,6 +2,7 @@ import {generateEmailVerificationCode} from "@/features/auth/utils/generate-emai
 import {sendEmailVerification} from "@/features/email-verification/send-email-verification";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 
 export type EmailVerificationEventArgs  = {
     data: {
@@ -12,20 +13,68 @@ export type EmailVerificationEventArgs  = {
 export const emailVerificationEvent = inngest.createFunction(
 {id: "trigger-email-verification"},
 {event: "app/auth.sign-up"},
-async ({event}) => {
+async ({event, step}) => {
     const {userId} = event.data;
 
-    const user = await prisma.user.findUniqueOrThrow({
-        where: {id: userId},
-    })
+    try {
+        const user = await step.run("fetch-user", async () => {
+            try {
+                return await prisma.user.findUniqueOrThrow({
+                    where: {id: userId},
+                });
+            } catch (error) {
+                captureSentryError(error, {
+                    userId,
+                    action: "email-verification-fetch-user",
+                    level: "error",
+                    tags: { inngest: "trigger-email-verification", step: "fetch-user" },
+                });
+                throw error;
+            }
+        });
 
-    const verificationCode = await generateEmailVerificationCode(user.id, user.email);
+        const verificationCode = await step.run("generate-verification-code", async () => {
+            try {
+                return await generateEmailVerificationCode(user.id, user.email);
+            } catch (error) {
+                captureSentryError(error, {
+                    userId,
+                    action: "email-verification-generate-code",
+                    level: "error",
+                    tags: { inngest: "trigger-email-verification", step: "generate-verification-code" },
+                });
+                throw error;
+            }
+        });
 
-   const result = await sendEmailVerification(user.username, user.email, verificationCode);
+        const result = await step.run("send-verification-email", async () => {
+            try {
+                const emailResult = await sendEmailVerification(user.username, user.email, verificationCode);
 
-   if (result.error) {
-       throw new Error(`${result.error.name}: ${result.error.message}`);
-   }
+                if (emailResult.error) {
+                    throw new Error(`${emailResult.error.name}: ${emailResult.error.message}`);
+                }
 
-   return {event, body: result}
+                return emailResult;
+            } catch (error) {
+                captureSentryError(error, {
+                    userId,
+                    action: "email-verification-send",
+                    level: "error",
+                    tags: { inngest: "trigger-email-verification", step: "send-verification-email" },
+                });
+                throw error;
+            }
+        });
+
+        return {event, body: result};
+    } catch (error) {
+        captureSentryError(error, {
+            userId,
+            action: "email-verification",
+            level: "error",
+            tags: { inngest: "trigger-email-verification" },
+        });
+        throw error;
+    }
 })

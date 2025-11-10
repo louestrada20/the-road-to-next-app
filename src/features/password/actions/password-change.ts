@@ -1,4 +1,5 @@
 "use server"
+import * as Sentry from "@sentry/nextjs";
 import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {verifyPasswordHash} from "@/features/auth/password";
@@ -7,6 +8,7 @@ import { getClientIp } from "@/lib/get-client-ip";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
 import { limitEmail,limitIp } from "@/lib/rate-limit";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 
 
 const passwordChangeSchema = z.object({
@@ -14,9 +16,15 @@ const passwordChangeSchema = z.object({
 });
 
 export const passwordChange = async (_actionState: ActionState, formData: FormData) => {
+    const auth = await getAuthOrRedirect();
 
     try {
-        const auth = await getAuthOrRedirect();
+        Sentry.addBreadcrumb({
+            category: "password.action",
+            message: "Password change request",
+            level: "info",
+            data: { userId: auth.user.id },
+        });
 
         // ------- Rate-limit guards -------
         const ip = await getClientIp();
@@ -48,11 +56,24 @@ export const passwordChange = async (_actionState: ActionState, formData: FormDa
             return toActionState("ERROR", "Incorrect password", formData)
         }
 
-        await inngest.send({name: "app/password.password-reset",
-            data: {userId: user.id}
-        })
+        try {
+            await inngest.send({name: "app/password.password-reset",
+                data: {userId: user.id}
+            })
+        } catch (inngestError) {
+            captureSentryError(inngestError, {
+                userId: user.id,
+                action: "password-change-send-email",
+                level: "warning",
+            });
+        }
 
     } catch (error) {
+        captureSentryError(error, {
+            userId: auth.user.id,
+            action: "password-change",
+            level: "error",
+        });
         return fromErrorToActionState(error, formData)
     }
     return toActionState("SUCCESS", "Check your email for a reset link")

@@ -1,5 +1,6 @@
 "use server"
 
+import * as Sentry from "@sentry/nextjs";
 import {revalidatePath} from "next/cache";
 import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
@@ -8,6 +9,7 @@ import {getAdminOrRedirect} from "@/features/memberships/queries/get-admin-or-re
 import {getStripeProvisioningByOrganization} from "@/features/stripe/queries/get-stripe-provisioning";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import {invitationsPath} from "@/paths";
 
 const createInvitationSchema = z.object({
@@ -20,6 +22,13 @@ export const createInvitation =  async (
     formData: FormData,
 ) => {
     const { user } = await getAdminOrRedirect(organizationId);
+
+    Sentry.addBreadcrumb({
+        category: "invitation.action",
+        message: "Creating invitation",
+        level: "info",
+        data: { organizationId },
+    });
 
     const {allowedMembers, currentMembers} = await getStripeProvisioningByOrganization(organizationId);
 
@@ -70,7 +79,13 @@ export const createInvitation =  async (
         });
 
     } catch (error) {
-        return fromErrorToActionState(error);
+        captureSentryError(error, {
+            userId: user.id,
+            organizationId: organizationId,
+            action: "create-invitation",
+            level: "error",
+        });
+        return fromErrorToActionState(error, formData);
     }
 
     revalidatePath(invitationsPath(organizationId));

@@ -1,15 +1,17 @@
 "use server";
 
+import * as Sentry from "@sentry/nextjs";
 import {revalidatePath} from "next/cache";
 import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import * as attachmentSubjectDTO from "@/features/attachments/dto/attachment-subject-dto";
 import { filesSchema } from "@/features/attachments/schema/files";
-import * as attachmentService from "@/features/attachments/service";   
+import * as attachmentService from "@/features/attachments/service";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import * as commentData from "@/features/comment/data";
 import * as ticketService from "@/features/ticket/service";
 import { trackCommentCreated } from "@/lib/posthog/events/comments";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import {ticketPath} from "@/paths";
 
 const createCommentSchema = z.object({
@@ -26,6 +28,12 @@ export const createComment = async (ticketId: string, _actionState: ActionState,
     let comment;
 
     try {
+        Sentry.addBreadcrumb({
+            category: "comment.action",
+            message: "Creating comment",
+            level: "info",
+            data: { ticketId, userId: user.id },
+        });
 
         const {content, files} = createCommentSchema.parse({
             content: formData.get("content"),
@@ -70,11 +78,27 @@ export const createComment = async (ticketId: string, _actionState: ActionState,
                 attachmentCount: files.length,
             });
         } catch (posthogError) {
+            captureSentryError(posthogError, {
+                userId: user.id,
+                organizationId: comment.ticket.organizationId,
+                ticketId,
+                action: "track-comment-created",
+                level: "warning", // Analytics failure is non-critical
+                tags: { analytics: "posthog" },
+            });
+
             if (process.env.NODE_ENV === "development") {
                 console.error('[PostHog] Failed to track comment created event:', posthogError);
             }
         }
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            ticketId,
+            action: "create-comment",
+            level: "error", // Critical business operation
+        });
+
         return fromErrorToActionState(error, formData);
     }
     revalidatePath(ticketPath(ticketId));

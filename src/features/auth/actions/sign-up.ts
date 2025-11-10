@@ -12,6 +12,7 @@ import {inngest} from "@/lib/inngest";
 import {identifyUserServer} from "@/lib/posthog/identify-server";
 import {prisma} from "@/lib/prisma";
 import { limitEmail, limitIp } from "@/lib/rate-limit";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import {ticketsPath} from "@/paths";
 
 const signUpSchema = z.object({
@@ -107,6 +108,20 @@ export const signUp = async (_actionState: ActionState, formData: FormData) => {
         });
 
     } catch (error) {
+        // Only capture unexpected errors (DB failures, session issues)
+        // Don't capture validation errors or rate limits
+        if (!(error instanceof z.ZodError)) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            // Don't capture expected rate limit failures
+            if (!errorMessage.includes('Too many')) {
+                captureSentryError(error, {
+                    action: "sign-up",
+                    level: "error",
+                    tags: { feature: "auth" },
+                });
+            }
+        }
         return fromErrorToActionState(error, formData);
     }
 

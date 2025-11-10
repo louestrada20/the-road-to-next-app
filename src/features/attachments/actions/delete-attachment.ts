@@ -1,6 +1,6 @@
 "use server"
 
-
+import * as Sentry from "@sentry/nextjs";
 import {revalidatePath} from "next/cache";
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
@@ -8,6 +8,7 @@ import {isOwner} from "@/features/auth/utils/is-owner";
 import {inngest} from "@/lib/inngest";
 import { trackAttachmentDeleted } from "@/lib/posthog/events/attachments";
 import {prisma} from "@/lib/prisma";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import { deleteFileByBlobUrl } from "@/lib/storage";
 import * as attachmentData from "../data";
 import * as attachmentSubjectDTO from "../dto/attachment-subject-dto";
@@ -16,13 +17,20 @@ import { getAttachmentPath } from "../utils/attachment-helper";
 export const deleteAttachment = async (id: string) => {
     const {user} = await getAuthOrRedirect();
 
-    const attachment = await attachmentData.getAttachment({ 
-        id, 
-        options: { 
-            includeTicket: true, 
-            includeComment: true, 
-            includeCommentWithTicket: true 
-        } 
+    Sentry.addBreadcrumb({
+        category: "attachment.action",
+        message: "Deleting attachment",
+        level: "info",
+        data: { userId: user.id, attachmentId: id },
+    });
+
+    const attachment = await attachmentData.getAttachment({
+        id,
+        options: {
+            includeTicket: true,
+            includeComment: true,
+            includeCommentWithTicket: true
+        }
     });
 
     const subject = attachmentSubjectDTO.fromAttachment(attachment);
@@ -78,9 +86,22 @@ export const deleteAttachment = async (id: string) => {
                     if (process.env.NODE_ENV === "development") {
                         console.error('[PostHog] Failed to track attachment event:', posthogError);
                     }
+                    captureSentryError(posthogError, {
+                        userId: user.id,
+                        organizationId: subject.organizationId,
+                        action: "track-attachment-deleted",
+                        level: "warning",
+                        tags: { analytics: "posthog" },
+                    });
                 }
 
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            organizationId: subject.organizationId,
+            action: "delete-attachment",
+            level: "error",
+        });
         return fromErrorToActionState(error);
     }
 

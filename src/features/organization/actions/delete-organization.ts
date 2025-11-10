@@ -1,16 +1,25 @@
 "use server"
 
+import * as Sentry from "@sentry/nextjs";
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAdminOrRedirect} from "@/features/memberships/queries/get-admin-or-redirect";
 import {getOrganizationsByUser} from "@/features/organization/queries/get-organizations-by-user";
 import {inngest} from "@/lib/inngest";
 import { trackOrganizationDeleted } from "@/lib/posthog/events/organization";
 import {prisma} from "@/lib/prisma";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 
 export const deleteOrganization = async (organizationId: string) => {
     const {user} = await getAdminOrRedirect(organizationId);
 
     try {
+        Sentry.addBreadcrumb({
+            category: "organization.action",
+            message: "Deleting organization",
+            level: "info",
+            data: { organizationId, userId: user.id },
+        });
+
         const organizationsUserBelongsTo = await getOrganizationsByUser();
 
         const canDelete = organizationsUserBelongsTo.some((organization) => organization.id === organizationId);
@@ -44,6 +53,14 @@ export const deleteOrganization = async (organizationId: string) => {
                 organizationName: organization.name,
             });
         } catch (posthogError) {
+            captureSentryError(posthogError, {
+                userId: user.id,
+                organizationId: organization.id,
+                action: "track-organization-deleted",
+                level: "warning", // Analytics failure is non-critical
+                tags: { analytics: "posthog" },
+            });
+
             if (process.env.NODE_ENV === "development") {
                 console.error('[PostHog] Failed to track organization event:', posthogError);
             }
@@ -63,6 +80,13 @@ export const deleteOrganization = async (organizationId: string) => {
         // since component unmounts before it can be displayed. 
 
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            organizationId,
+            action: "delete-organization",
+            level: "error", // Critical business operation
+        });
+
         return fromErrorToActionState(error);
     }
 

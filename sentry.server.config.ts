@@ -31,10 +31,18 @@ Sentry.init({
 
   // Ignore expected errors to reduce noise
   ignoreErrors: [
+    // Rate limiting (expected behavior)
     'Too many requests',
     'Rate limit exceeded',
+    // Next.js expected behaviors
     'NEXT_REDIRECT', // Next.js redirects are not errors
     'NEXT_NOT_FOUND', // Next.js not found is expected
+    // Auth expected failures
+    'Incorrect email or password',
+    'Invalid or expired code',
+    // Authorization expected denials
+    'Not authorized',
+    'Not Authorized',
   ],
 
   // Don't send PII by default for privacy

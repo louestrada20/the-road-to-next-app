@@ -1,5 +1,6 @@
 "use server"
 import { Organization } from "@prisma/client";
+import * as Sentry from "@sentry/nextjs";
 import {redirect} from "next/navigation";
 import {z} from "zod";
 import {setCookieByKey} from "@/actions/cookies";
@@ -8,6 +9,7 @@ import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {inngest} from "@/lib/inngest";
 import { trackOrganizationCreated } from "@/lib/posthog/events/organization";
 import {prisma} from "@/lib/prisma";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import {ticketsPath} from "@/paths";
 import { membershipsPath } from "@/paths";
 
@@ -25,6 +27,13 @@ export const createOrganization = async (_actionState: ActionState, formData: Fo
     let organization: Organization;
 
     try {
+        Sentry.addBreadcrumb({
+            category: "organization.action",
+            message: "Creating organization",
+            level: "info",
+            data: { userId: user.id },
+        });
+
         const data = createOrganizationSchema.parse({
             name: formData.get("name"),
         });
@@ -71,11 +80,25 @@ export const createOrganization = async (_actionState: ActionState, formData: Fo
                 organizationName: organization.name,
             });
         } catch (posthogError) {
+            captureSentryError(posthogError, {
+                userId: user.id,
+                organizationId: organization.id,
+                action: "track-organization-created",
+                level: "warning", // Analytics failure is non-critical
+                tags: { analytics: "posthog" },
+            });
+
             if (process.env.NODE_ENV === "development") {
                 console.error('[PostHog] Failed to track organization created event:', posthogError);
             }
         }
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            action: "create-organization",
+            level: "error", // Critical business operation
+        });
+
         return fromErrorToActionState(error);
     }
     await setCookieByKey("toast",   

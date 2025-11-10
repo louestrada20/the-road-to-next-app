@@ -7,6 +7,7 @@ import {generateEmailVerificationCode} from "@/features/auth/utils/generate-emai
 import {sendEmailVerification} from "@/features/email-verification/send-email-verification";
 import { getClientIp } from "@/lib/get-client-ip";
 import { limitEmail, limitIp } from "@/lib/rate-limit";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 
 export const emailVerificationResend = async () => {        
     const {user} = await getAuthOrRedirect({
@@ -39,6 +40,17 @@ export const emailVerificationResend = async () => {
         }
 
     } catch (error) {
+        // Capture email sending failures (but not rate limits)
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        if (!errorMessage.includes('Too many')) {
+            captureSentryError(error, {
+                userId: user.id,
+                action: "email-verification-resend",
+                level: "warning", // Email failures are important but not critical
+                tags: { feature: "auth", email: "verification" },
+            });
+        }
 
         return fromErrorToActionState(error)
     }

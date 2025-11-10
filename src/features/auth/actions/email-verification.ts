@@ -8,6 +8,7 @@ import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {createSession, generateRandomSessionToken} from "@/features/auth/session";
 import {validateEmailVerificationCode} from "@/features/auth/utils/validate-email-verification-code";
 import {prisma} from "@/lib/prisma";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import { ticketsPath} from "@/paths";
 
 const emailVerificationSchema = z.object({
@@ -51,6 +52,21 @@ export const emailVerification = async (_actionState: ActionState, formData: For
 
 
     } catch (error) {
+        // Only capture unexpected errors (DB failures, session issues)
+        // Don't capture validation errors or invalid codes
+        if (!(error instanceof z.ZodError)) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            // Don't capture expected validation failures
+            if (!errorMessage.includes('Invalid or expired code')) {
+                captureSentryError(error, {
+                    userId: user.id,
+                    action: "email-verification",
+                    level: "error",
+                    tags: { feature: "auth" },
+                });
+            }
+        }
 
         return fromErrorToActionState(error, formData)
     }

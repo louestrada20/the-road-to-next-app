@@ -1,4 +1,5 @@
 "use server"
+import * as Sentry from "@sentry/nextjs";
 import {revalidatePath} from "next/cache";
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
@@ -6,6 +7,7 @@ import {isOwner} from "@/features/auth/utils/is-owner";
 import * as ticketService from "@/features/ticket/service";
 import { trackCommentDeleted } from "@/lib/posthog/events/comments";
 import {prisma} from "@/lib/prisma";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import {ticketPath} from "@/paths";
 
 export const deleteComment = async (id: string) => {
@@ -25,6 +27,13 @@ export const deleteComment = async (id: string) => {
     }
 
     try {
+        Sentry.addBreadcrumb({
+            category: "comment.action",
+            message: "Deleting comment",
+            level: "info",
+            data: { commentId: id, userId: user.id, ticketId: comment.ticketId },
+        });
+
         await prisma.comment.delete({
             where: {
                 id
@@ -37,12 +46,28 @@ export const deleteComment = async (id: string) => {
                 ticketId: comment.ticketId,
                 contentLength: comment.content.length,
             });
-        } catch (error) {
+        } catch (posthogError) {
+            captureSentryError(posthogError, {
+                userId: user.id,
+                organizationId: comment.ticket.organizationId,
+                ticketId: comment.ticketId,
+                action: "track-comment-deleted",
+                level: "warning", // Analytics failure is non-critical
+                tags: { analytics: "posthog" },
+            });
+
             if (process.env.NODE_ENV === "development") {
-                console.error('[PostHog] Failed to track comment deleted event:', error);
+                console.error('[PostHog] Failed to track comment deleted event:', posthogError);
             }
         }
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            ticketId: comment.ticketId,
+            action: "delete-comment",
+            level: "error", // Critical business operation
+        });
+
         return fromErrorToActionState(error);
     }
 

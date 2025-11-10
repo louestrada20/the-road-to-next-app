@@ -10,6 +10,7 @@ import { getClientIp } from "@/lib/get-client-ip";
 import {identifyUserServer} from "@/lib/posthog/identify-server";
 import {prisma} from "@/lib/prisma";
 import { limitEmail,limitIp } from "@/lib/rate-limit";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import { ticketsPath} from "@/paths";
 
 const signInSchema = z.object({
@@ -69,7 +70,22 @@ export const signIn = async (_actionState: ActionState, formData: FormData) => {
         });
 
     } catch (error) {
-         return fromErrorToActionState(error, formData)
+        // Only capture unexpected errors (DB failures, session issues)
+        // Don't capture validation errors, rate limits, or invalid credentials
+        if (!(error instanceof z.ZodError)) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            // Don't capture expected auth failures
+            if (!errorMessage.includes('Too many requests') &&
+                !errorMessage.includes('Incorrect email or password')) {
+                captureSentryError(error, {
+                    action: "sign-in",
+                    level: "error",
+                    tags: { feature: "auth" },
+                });
+            }
+        }
+        return fromErrorToActionState(error, formData)
     }
 
     redirect(ticketsPath())

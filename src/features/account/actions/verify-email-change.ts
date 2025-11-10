@@ -1,4 +1,5 @@
 "use server"
+import * as Sentry from "@sentry/nextjs";
 import {redirect} from "next/navigation";
 import {z} from "zod";
 import {setCookieByKey} from "@/actions/cookies";
@@ -9,6 +10,7 @@ import {createSession, generateRandomSessionToken} from "@/features/auth/session
 import { getClientIp } from "@/lib/get-client-ip";
 import {prisma} from "@/lib/prisma";
 import { limitIp } from "@/lib/rate-limit";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import {accountProfilePath} from "@/paths";
 
 const verifyEmailChangeSchema = z.object({
@@ -16,8 +18,16 @@ const verifyEmailChangeSchema = z.object({
 });
 
 export const verifyEmailChange = async (_actionState: ActionState, formData: FormData) => {
+    const {user} = await getAuthOrRedirect();
+
     try {
-        const {user} = await getAuthOrRedirect();
+        Sentry.addBreadcrumb({
+            category: "account.action",
+            message: "Verifying email change",
+            level: "info",
+            data: { userId: user.id },
+        });
+
         const ip = await getClientIp();
 
         // Rate limiting
@@ -82,6 +92,11 @@ export const verifyEmailChange = async (_actionState: ActionState, formData: For
         await setSessionCookie(sessionToken, session.expiresAt);
 
     } catch (error) {
+        captureSentryError(error, {
+            userId: user.id,
+            action: "verify-email-change",
+            level: "error",
+        });
         return fromErrorToActionState(error, formData);
     }
 

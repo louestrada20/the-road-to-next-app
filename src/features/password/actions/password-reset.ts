@@ -1,4 +1,5 @@
 "use server"
+import * as Sentry from "@sentry/nextjs";
 import {redirect} from "next/navigation";
 import {z} from "zod";
 import {setCookieByKey} from "@/actions/cookies";
@@ -6,9 +7,10 @@ import {ActionState, fromErrorToActionState, toActionState} from "@/components/f
 import { setSessionCookie } from "@/features/auth/cookie";
 import {hashPassword} from "@/features/auth/password";
 import { createSession, generateRandomSessionToken } from "@/features/auth/session";
-import { getClientIp } from "@/lib/get-client-ip";      
+import { getClientIp } from "@/lib/get-client-ip";
 import {prisma} from "@/lib/prisma";
 import { limitEmail,limitIp } from "@/lib/rate-limit";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 import {signInPath, ticketsPath} from "@/paths";
 import {hashToken} from "@/utils/crypto";
 
@@ -28,7 +30,15 @@ const passwordResetSchema = z.object({
 export const passwordReset = async (tokenId: string, _actionState: ActionState, formData: FormData) => {
     let sessionCreated = false;
     let toastMessage = "";
+    let userId: string | undefined;
+
     try {
+        Sentry.addBreadcrumb({
+            category: "password.action",
+            message: "Resetting password",
+            level: "info",
+        });
+
         const ip = await getClientIp();
 
         // Coarse guard – 30 reset attempts per minute per IP
@@ -55,6 +65,8 @@ export const passwordReset = async (tokenId: string, _actionState: ActionState, 
             }
         }
     })
+
+    userId = passwordResetToken?.userId;
 
         if (passwordResetToken) {
             await prisma.passwordResetToken.delete({
@@ -101,13 +113,23 @@ export const passwordReset = async (tokenId: string, _actionState: ActionState, 
             await setSessionCookie(sessionToken, session.expiresAt);
             sessionCreated = true;
             toastMessage = "Password reset successfully! You are now signed in.";
-        } catch {
+        } catch (sessionError) {
             sessionCreated = false;
             toastMessage = "Password reset successful, but there was an issue signing you in. Please sign in manually.";
+            captureSentryError(sessionError, {
+                userId: userId,
+                action: "password-reset-session-creation",
+                level: "warning",
+            });
         }
 
 
     } catch (error) {
+        captureSentryError(error, {
+            userId: userId,
+            action: "password-reset",
+            level: "error",
+        });
         return fromErrorToActionState(error, formData)
     }
 

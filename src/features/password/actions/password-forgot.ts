@@ -1,17 +1,27 @@
 "use server"
+import * as Sentry from "@sentry/nextjs";
 import {z} from "zod";
 import {ActionState, fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import { getClientIp } from "@/lib/get-client-ip";
 import {inngest} from "@/lib/inngest";
 import {prisma} from "@/lib/prisma";
 import { limitEmail,limitIp } from "@/lib/rate-limit";
+import { captureSentryError } from "@/lib/sentry/capture-error";
 
 const passwordForgotSchema = z.object({
     email: z.string().min(1, {message: "is required"}).max(191).email(),
 });
 
 export const passwordForgot = async (_actionState: ActionState, formData: FormData) => {
+    let userId: string | undefined;
+
     try {
+        Sentry.addBreadcrumb({
+            category: "password.action",
+            message: "Password forgot request",
+            level: "info",
+        });
+
         const ip = await getClientIp();
 
         // Coarse IP guard – 30 forgot requests / minute per IP
@@ -36,12 +46,26 @@ export const passwordForgot = async (_actionState: ActionState, formData: FormDa
             return toActionState("ERROR", "Incorrect email", formData)
         }
 
+        userId = user.id;
 
+        try {
+            await inngest.send({name: "app/password.password-reset",
+            data: {userId: user.id}
+            })
+        } catch (inngestError) {
+            captureSentryError(inngestError, {
+                userId: user.id,
+                action: "password-forgot-send-email",
+                level: "warning",
+            });
+        }
 
-   await inngest.send({name: "app/password.password-reset",
-   data: {userId: user.id}
-   })
     } catch (error) {
+        captureSentryError(error, {
+            userId: userId,
+            action: "password-forgot",
+            level: "error",
+        });
         return fromErrorToActionState(error, formData)
     }
 
