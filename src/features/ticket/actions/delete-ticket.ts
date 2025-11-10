@@ -1,4 +1,5 @@
 "use server"
+import * as Sentry from "@sentry/nextjs";
 import {revalidatePath} from "next/cache";
 import {redirect} from "next/navigation";
 import {setCookieByKey} from "@/actions/cookies";
@@ -8,9 +9,8 @@ import {isOwner} from "@/features/auth/utils/is-owner";
 import {getTicketPermissions} from "@/features/ticket/permissions/get-ticket-permission";
 import { trackTicketDeleted } from "@/lib/posthog/events/tickets";
 import {prisma} from "@/lib/prisma";
-import {ticketsPath} from "@/paths";
-import * as Sentry from "@sentry/nextjs";
 import { captureSentryError } from "@/lib/sentry/capture-error";
+import {ticketsPath} from "@/paths";
 
 export const deleteTicket = async (id: string) => {
     const {user} = await getAuthOrRedirect();

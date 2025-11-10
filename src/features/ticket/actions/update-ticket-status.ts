@@ -1,15 +1,15 @@
 "use server"
 
 import {TicketStatus} from "@prisma/client";
+import * as Sentry from "@sentry/nextjs";
 import {revalidatePath} from "next/cache";
 import {fromErrorToActionState, toActionState} from "@/components/form/utils/to-action-state";
 import {getAuthOrRedirect} from "@/features/auth/queries/get-auth-or-redirect";
 import {isOwner} from "@/features/auth/utils/is-owner";
 import { trackTicketStatusChanged } from "@/lib/posthog/events/tickets";
 import {prisma} from "@/lib/prisma";
-import {ticketsPath} from "@/paths";
-import * as Sentry from "@sentry/nextjs";
 import { captureSentryError } from "@/lib/sentry/capture-error";
+import {ticketsPath} from "@/paths";
 
 export const updateTicketStatus = async (id: string, status: TicketStatus) => {
 
