@@ -1,13 +1,13 @@
 "use server"
 
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache"
 import { toActionState } from "@/components/form/utils/to-action-state"
 import { getAdminOrRedirect } from "@/features/memberships/queries/get-admin-or-redirect"
+import { trackTicketPublicDenied } from "@/lib/posthog/events/tickets"
 import { prisma } from "@/lib/prisma"
-import { ticketPath } from "@/paths"
-import * as Sentry from "@sentry/nextjs";
 import { captureSentryError } from "@/lib/sentry/capture-error";
-import { trackTicketMadePublic, trackTicketPublicDenied } from "@/lib/posthog/events/tickets"
+import { ticketPath } from "@/paths"
 
 export const denyTicketPublic = async (ticketId: string, organizationId: string) => {
    
