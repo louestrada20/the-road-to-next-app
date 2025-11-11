@@ -64,8 +64,8 @@ export function TechStackSection() {
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {techStack.map((tech) => (
-            <TechCard key={tech.name} {...tech} />
+          {techStack.map((tech, index) => (
+            <TechCard key={tech.name} {...tech} index={index} />
           ))}
         </div>
       </div>
