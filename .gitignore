@@ -55,6 +55,7 @@ trust.json
 
 # MCP Configuration (contains credentials)
 .cursor/
+.mcp.json
 
 # Lambda build artifacts (AWS deployment)
 lambda-build/

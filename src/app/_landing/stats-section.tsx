@@ -10,13 +10,13 @@ async function StatsContent() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatCard value={stats.organizations} label="Organizations" icon={LucideBuilding2} />
-      <StatCard value={stats.totalTickets} label="Total Tickets" icon={LucideTicket} />
-      <StatCard value={stats.resolvedTickets} label="Resolved" icon={LucideCheckCircle} />
+      <StatCard value={stats.organizations} label="Organizations" icon={<LucideBuilding2 className="h-8 w-8 mb-4 text-primary" />} />
+      <StatCard value={stats.totalTickets} label="Total Tickets" icon={<LucideTicket className="h-8 w-8 mb-4 text-primary" />} />
+      <StatCard value={stats.resolvedTickets} label="Resolved" icon={<LucideCheckCircle className="h-8 w-8 mb-4 text-primary" />} />
       <StatCard
         value={fromCent(stats.totalBounties)}
         label="Bounties Paid"
-        icon={LucideDollarSign}
+        icon={<LucideDollarSign className="h-8 w-8 mb-4 text-primary" />}
         prefix="$"
       />
     </div>
